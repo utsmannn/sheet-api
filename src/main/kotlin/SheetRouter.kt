@@ -29,9 +29,15 @@ fun Route.sheetRouting(sheets: Sheets) {
         val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
 
         val sheetModule = SheetModule(sheetId, sheets)
-        val (arr, total) = sheetModule.getJsonSlice(sheetName, perPage, offset)
-        call.response.header("X-Total-Count", total.toString())
-        call.respond(arr)
+        val data = sheetModule.getAutoFormattedData(sheetName, perPage, offset)
+
+        // For flat data (JsonArray), include pagination header
+        if (data is JsonArray) {
+            val (_, total) = sheetModule.getJsonSlice(sheetName, perPage, offset)
+            call.response.header("X-Total-Count", total.toString())
+        }
+
+        call.respond(data)
     }
 
     get("/{sheetName}/schema") {

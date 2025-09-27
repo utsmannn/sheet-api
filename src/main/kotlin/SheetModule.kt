@@ -64,6 +64,182 @@ class SheetModule(
     }
 
     /**
+     * Get grouped/hierarchical data from specified sheet
+     * Groups rows by columns that have merged/empty cells
+     * @param sheetName sheet name (tab)
+     * @return JsonObject with hierarchical structure
+     */
+    suspend fun getGroupedJson(sheetName: String): JsonObject = withContext(Dispatchers.IO) {
+
+        // Get all data from sheet
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull() ?: emptyList()
+
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
+            .execute()
+            .getValues().orEmpty()
+
+        if (allData.size <= 1) {
+            return@withContext buildJsonObject {}
+        }
+
+        val dataRows = allData.drop(1) // Skip header
+
+        // Step 1: Detect root vs grouping columns
+        val groupingColumns = mutableSetOf<Int>()
+        val rootColumns = mutableSetOf<Int>()
+
+        headerRow.forEachIndexed { colIndex, _ ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+
+            // Count non-empty values in this column across ALL data rows
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+
+            val totalRows = dataRows.size
+
+            when {
+                // Root column: has value in first row AND only 1 occurrence in total (only in first row)
+                firstRowValue.isNotBlank() && nonEmptyCount == 1 -> {
+                    rootColumns.add(colIndex)
+                }
+                // Grouping column: has value in first row AND has multiple but not all occurrences (merged pattern)
+                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows -> {
+                    groupingColumns.add(colIndex)
+                }
+                // Content columns: all or most rows have values (not grouped, not root)
+                // These will be handled as content within groups
+            }
+        }
+
+        // Step 2: Build result object
+        val result = buildJsonObject {
+
+            // Add root level fields (from first row)
+            val firstRow = dataRows.firstOrNull() ?: return@buildJsonObject
+            rootColumns.forEach { colIndex ->
+                val fieldName = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                val fieldValue = firstRow.getOrNull(colIndex)?.toString() ?: ""
+                if (fieldName.isNotBlank()) {
+                    put(fieldName, fieldValue)
+                }
+            }
+
+            // Step 3: Process grouping columns (should only be one main grouping column)
+            if (groupingColumns.isNotEmpty()) {
+                // Take the first grouping column (assuming single-level grouping for now)
+                val groupColIndex = groupingColumns.first()
+                val groupFieldName = headerRow.getOrNull(groupColIndex)?.toString() ?: ""
+
+                val groups = mutableMapOf<String, MutableList<JsonObject>>()
+                var currentGroupName = ""
+
+                dataRows.forEach { row ->
+                    val groupValue = row.getOrNull(groupColIndex)?.toString() ?: ""
+
+                    // Update current group if we have a new group value
+                    if (groupValue.isNotBlank()) {
+                        currentGroupName = groupValue
+                    }
+
+                    // Add row to current group (only include non-root, non-group columns)
+                    if (currentGroupName.isNotBlank()) {
+                        val rowData = buildJsonObject {
+                            headerRow.forEachIndexed { colIndex, colName ->
+                                // Skip root columns and the grouping column itself
+                                if (colIndex !in rootColumns && colIndex !in groupingColumns) {
+                                    val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                                    if (cellValue.isNotBlank()) {
+                                        put(colName.toString(), cellValue)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Only add if rowData has content
+                        if (rowData.isNotEmpty()) {
+                            groups.getOrPut(currentGroupName) { mutableListOf() }.add(rowData)
+                        }
+                    }
+                }
+
+                // Add groups to result with plural name
+                val pluralFieldName = "${groupFieldName}s" // Simple pluralization
+                put(pluralFieldName, buildJsonArray {
+                    groups.forEach { (groupName, items) ->
+                        add(buildJsonObject {
+                            put("name", groupName)
+                            put("content", buildJsonArray {
+                                items.forEach { add(it) }
+                            })
+                        })
+                    }
+                })
+            }
+        }
+
+        result
+    }
+
+    /**
+     * Check if sheet has grouping pattern (merged cells)
+     * @param sheetName sheet name (tab)
+     * @return Boolean true if has grouping pattern
+     */
+    private suspend fun hasGroupingPattern(sheetName: String): Boolean = withContext(Dispatchers.IO) {
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull() ?: emptyList()
+
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
+            .execute()
+            .getValues().orEmpty()
+
+        if (allData.size <= 1) return@withContext false
+
+        val dataRows = allData.drop(1)
+
+        // Check if any column has grouping pattern
+        headerRow.indices.any { colIndex ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+            val totalRows = dataRows.size
+
+            // Grouping pattern: has value in first row AND has multiple but not all occurrences
+            firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
+        }
+    }
+
+    /**
+     * Get data with automatic format detection (grouped or flat)
+     * @param sheetName sheet name (tab)
+     * @param perPage number of data rows (excluding header) - only for flat data
+     * @param offset data row starting from 1 - only for flat data
+     * @return JsonElement - JsonObject for grouped, JsonArray for flat
+     */
+    suspend fun getAutoFormattedData(
+        sheetName: String,
+        perPage: Int = 10,
+        offset: Int = 1
+    ): JsonElement = withContext(Dispatchers.IO) {
+        if (hasGroupingPattern(sheetName)) {
+            getGroupedJson(sheetName)
+        } else {
+            getJsonSlice(sheetName, perPage, offset).first
+        }
+    }
+
+    /**
      * Detect data type from string value
      * @param value string value to detect
      * @return String data type: "integer", "double", "boolean", "string"
