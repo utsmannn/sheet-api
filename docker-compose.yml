@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  sheet-api:
+    image: ktor-docker-image
+    container_name: sheet-api-kotlin
+    ports:
+      - "8910:8910"
+    environment:
+      - SHEET_ID=${SHEET_ID}
+#      - CREDENTIAL_PATH=/app/credentials/service-account-key.json
+      - CREDENTIAL_PATH=${CREDENTIAL_PATH}
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    volumes:
+      - ./credentials:/app/credentials:ro
+    networks:
+      - sheet-api-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8910/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  sheet-api-network:
+    driver: bridge
+
+# Example usage:
+# 1. Create .env file with SHEET_ID=your_sheet_id
+# 2. Put your service-account-key.json in ./credentials/ folder
+# 3. Run: docker-compose up -d

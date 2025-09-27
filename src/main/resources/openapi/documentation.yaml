@@ -6,7 +6,7 @@ info:
   contact:
     name: "Utsman"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://0.0.0.0:8910"
 paths:
   /:
     get:
