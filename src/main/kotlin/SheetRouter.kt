@@ -1,5 +1,7 @@
 package com.utsman
 
+import com.google.api.services.sheets.v4.Sheets
+import com.google.api.services.sheets.v4.model.Sheet
 import io.ktor.http.*
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.request.*
@@ -7,25 +9,38 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.*
 
-fun Route.sheetRouting() {
-    get("/sheets") {
-        val sheetNames = SheetModule.getSheetNames()
+fun Route.sheetRouting(sheets: Sheets) {
+
+    get {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
+            throw BadRequestException("sheetId required in path or SHEET_ID env var")
+        }
+        val sheetModule = SheetModule(sheetId, sheets)
+        val sheetNames = sheetModule.getSheetNames()
         call.respond(sheetNames)
     }
 
-    get("/sheets/{sheetName}") {
+    get("/{sheetName}") {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
+            throw BadRequestException("sheetId required in path or SHEET_ID env var")
+        }
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val perPage = call.request.queryParameters["per_page"]?.toIntOrNull() ?: 10
         val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
 
-        val (arr, total) = SheetModule.getJsonSlice(sheetName, perPage, offset)
+        val sheetModule = SheetModule(sheetId, sheets)
+        val (arr, total) = sheetModule.getJsonSlice(sheetName, perPage, offset)
         call.response.header("X-Total-Count", total.toString())
         call.respond(arr)
     }
 
-    get("/sheets/{sheetName}/schema") {
+    get("/{sheetName}/schema") {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
+            throw BadRequestException("sheetId required in path or SHEET_ID env var")
+        }
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
-        val schema = SheetModule.getSheetSchema(sheetName)
+        val sheetModule = SheetModule(sheetId, sheets)
+        val schema = sheetModule.getSheetSchema(sheetName)
 
         val schemaJson = buildJsonObject {
             put("sheetName", sheetName)
@@ -42,16 +57,20 @@ fun Route.sheetRouting() {
         call.respond(schemaJson)
     }
 
-    post("/sheets/{sheetName}") {
+    post("/{sheetName}") {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
+            throw BadRequestException("sheetId required in path or SHEET_ID env var")
+        }
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val body = call.receiveText()
+        val sheetModule = SheetModule(sheetId, sheets)
 
         val lenientJson = Json { isLenient = true; ignoreUnknownKeys = true }
 
         try {
             val jsonObject = lenientJson.parseToJsonElement(body).jsonObject
-            val schema = SheetModule.getSheetSchema(sheetName)
-            val validationErrors = SheetModule.validateJsonSchema(jsonObject, schema)
+            val schema = sheetModule.getSheetSchema(sheetName)
+            val validationErrors = sheetModule.validateJsonSchema(jsonObject, schema)
 
             if (validationErrors.isNotEmpty()) {
                 call.respond(
@@ -64,7 +83,7 @@ fun Route.sheetRouting() {
                 return@post
             }
 
-            SheetModule.appendRowFromJson(sheetName, body)
+            sheetModule.appendRowFromJson(sheetName, body)
             call.respond(mapOf("ok" to true))
         } catch (e: Exception) {
             call.respond(

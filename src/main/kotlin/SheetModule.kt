@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.AppendValuesResponse
+import com.google.api.services.sheets.v4.model.Sheet
 import com.google.api.services.sheets.v4.model.ValueRange
 import com.google.auth.http.HttpCredentialsAdapter
 import com.google.auth.oauth2.GoogleCredentials
@@ -12,22 +13,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
 import java.io.File
 
-object SheetModule {
-
-    private val spreadsheetId = System.getenv("SHEET_ID")
-    private val credentialFile = File(System.getenv("CREDENTIAL_PATH"))
-        .also { require(it.exists()) { "credential file not found at ${it.absolutePath}" } }
-
-    private val transport = GoogleNetHttpTransport.newTrustedTransport()
-    private val jsonFactory = GsonFactory.getDefaultInstance()
-
-    private val credentials = GoogleCredentials.fromStream(credentialFile.inputStream())
-        .createScoped(listOf("https://www.googleapis.com/auth/spreadsheets"))
-
-    private val sheets = Sheets.Builder(transport, jsonFactory, HttpCredentialsAdapter(credentials))
-        .setApplicationName("KtorSheetAPI")
-        .build()
-
+class SheetModule(
+    private val spreadsheetId: String,
+    private val sheets: Sheets,
+) {
     /**
      * Get paginated data slice from specified sheet
      * @param sheetName sheet name (tab)

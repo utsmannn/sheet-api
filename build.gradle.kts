@@ -14,7 +14,7 @@ application {
 ktor {
     docker {
         localImageName.set("utsmannn/sheet-api")
-        imageTag.set("0.0.1")
+        imageTag.set(version.toString())
     }
 }
 
