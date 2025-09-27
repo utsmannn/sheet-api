@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: "Sheet API"
-  description: "API for managing Google Sheets data"
+  description: "API for managing Google Sheets data with automatic hierarchical grouping detection and dynamic sheet ID support"
   version: "0.0.1"
   contact:
     name: "Utsman"
@@ -10,27 +10,30 @@ servers:
 paths:
   /:
     get:
-      description: "Health check endpoint"
+      description: "Health check endpoint and landing page"
       responses:
         "200":
-          description: "OK"
+          description: "OK - Returns React landing page with interactive API documentation"
           content:
-            text/plain:
+            text/html:
               schema:
                 type: "string"
               examples:
                 Example#1:
-                  value: "Hello World! : /path/to/credentials.json"
+                  value: "React landing page with API documentation"
 
   /api/sheets/{sheetName}/schema:
     get:
       summary: "Get sheet schema"
-      description: "Get schema information from sheet headers (A1-Z1) for validation"
+      description: "Get schema information from sheet headers (A1-Z1) for validation using default SHEET_ID"
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
       parameters:
         - name: "sheetName"
           in: "path"
           required: true
-          description: "Name of the Google Sheet"
+          description: "Name of the Google Sheet tab"
           schema:
             type: "string"
             example: "MySheet"
@@ -82,20 +85,23 @@ paths:
 
   /api/sheets/{sheetName}:
     get:
-      summary: "Get sheet data"
-      description: "Retrieve data from a Google Sheet with pagination"
+      summary: "Get sheet data with auto-grouping"
+      description: "Retrieve data from a Google Sheet using default SHEET_ID. Automatically detects hierarchical patterns and returns nested JSON for grouped data or flat array for regular data with pagination."
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
       parameters:
         - name: "sheetName"
           in: "path"
           required: true
-          description: "Name of the Google Sheet"
+          description: "Name of the Google Sheet tab"
           schema:
             type: "string"
             example: "MySheet"
         - name: "per_page"
           in: "query"
           required: false
-          description: "Number of rows per page (default: 10)"
+          description: "Number of rows per page (default: 10, only applies to flat data)"
           schema:
             type: "integer"
             minimum: 1
@@ -104,28 +110,34 @@ paths:
         - name: "offset"
           in: "query"
           required: false
-          description: "Starting row number (default: 1)"
+          description: "Starting row number (default: 1, only applies to flat data)"
           schema:
             type: "integer"
             minimum: 1
             default: 1
       responses:
         "200":
-          description: "Successful response with sheet data"
+          description: "Successful response with sheet data (flat array or hierarchical object)"
           headers:
             X-Total-Count:
-              description: "Total number of rows in the sheet"
+              description: "Total number of rows in the sheet (only for flat data)"
               schema:
                 type: "integer"
           content:
             application/json:
               schema:
-                type: "array"
-                items:
-                  type: "object"
-                  additionalProperties: true
+                oneOf:
+                  - type: "array"
+                    description: "Flat data with pagination"
+                    items:
+                      type: "object"
+                      additionalProperties: true
+                  - type: "object"
+                    description: "Hierarchical grouped data"
+                    additionalProperties: true
               examples:
-                Example#1:
+                FlatData:
+                  summary: "Regular tabular data"
                   value:
                     - id: 1
                       name: "John Doe"
@@ -133,6 +145,26 @@ paths:
                     - id: 2
                       name: "Jane Smith"
                       email: "jane@example.com"
+                HierarchicalData:
+                  summary: "Auto-detected grouped data"
+                  value:
+                    Provinces:
+                      - name: "DKI Jakarta"
+                        data:
+                          - District: "Tanah Abang"
+                            Population: "87450"
+                            Area: "7.39"
+                            Density: "11833.6"
+                          - District: "Menteng"
+                            Population: "65420"
+                            Area: "5.12"
+                            Density: "12777.3"
+                      - name: "Jawa Barat"
+                        data:
+                          - District: "Cicendo"
+                            Population: "85420"
+                            Area: "12.5"
+                            Density: "6833.6"
         "400":
           description: "Bad request - missing sheetName parameter"
           content:
@@ -145,12 +177,15 @@ paths:
 
     post:
       summary: "Add new row to sheet"
-      description: "Append a new row to the Google Sheet"
+      description: "Append a new row to the Google Sheet using default SHEET_ID with automatic schema validation"
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
       parameters:
         - name: "sheetName"
           in: "path"
           required: true
-          description: "Name of the Google Sheet"
+          description: "Name of the Google Sheet tab"
           schema:
             type: "string"
             example: "MySheet"
@@ -211,7 +246,229 @@ paths:
                     error: "Invalid JSON format"
                     details: "Unexpected character at line 1"
 
+  # Dynamic Sheet ID endpoints
+  /api/sheetId/{sheetId}:
+    get:
+      summary: "Get sheet names for specific sheet ID"
+      description: "Retrieve all sheet names from a specific Google Sheets document"
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: "sheetId"
+          in: "path"
+          required: true
+          description: "Google Sheet ID (overrides SHEET_ID environment variable)"
+          schema:
+            type: "string"
+            example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+      responses:
+        "200":
+          description: "List of sheet names"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "string"
+              examples:
+                Example#1:
+                  value: ["Sheet1", "DataSheet", "Summary"]
+        "400":
+          description: "Bad request - invalid sheetId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/sheetId/{sheetId}/{sheetName}:
+    get:
+      summary: "Get sheet data with custom sheet ID and auto-grouping"
+      description: "Retrieve data from any Google Sheet using custom sheet ID. Automatically detects hierarchical patterns and returns nested JSON for grouped data or flat array for regular data."
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: "sheetId"
+          in: "path"
+          required: true
+          description: "Google Sheet ID (overrides SHEET_ID environment variable)"
+          schema:
+            type: "string"
+            example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet tab"
+          schema:
+            type: "string"
+            example: "Class Data"
+        - name: "per_page"
+          in: "query"
+          required: false
+          description: "Number of rows per page (default: 10, only applies to flat data)"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: "offset"
+          in: "query"
+          required: false
+          description: "Starting row number (default: 1, only applies to flat data)"
+          schema:
+            type: "integer"
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: "Successful response with sheet data (flat array or hierarchical object)"
+          headers:
+            X-Total-Count:
+              description: "Total number of rows in the sheet (only for flat data)"
+              schema:
+                type: "integer"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: "array"
+                    description: "Flat data with pagination"
+                    items:
+                      type: "object"
+                      additionalProperties: true
+                  - type: "object"
+                    description: "Hierarchical grouped data"
+                    additionalProperties: true
+              examples:
+                FlatData:
+                  summary: "Regular tabular data"
+                  value:
+                    - student_id: "S001"
+                      name: "Alice Johnson"
+                      grade: "A"
+                    - student_id: "S002"
+                      name: "Bob Smith"
+                      grade: "B+"
+                HierarchicalData:
+                  summary: "Auto-detected course structure"
+                  value:
+                    Courses:
+                      - name: "Programming Fundamentals"
+                        data:
+                          - Week: "Week 1 - Introduction"
+                            Lesson: "Variables and Data Types"
+                            Duration: "45 min"
+                          - Week: "Week 1 - Introduction"
+                            Lesson: "Control Structures"
+                            Duration: "60 min"
+                          - Week: "Week 2 - Functions"
+                            Lesson: "Function Basics"
+                            Duration: "50 min"
+        "400":
+          description: "Bad request - invalid parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      summary: "Add new row to custom sheet"
+      description: "Append a new row to any Google Sheet using custom sheet ID with automatic schema validation"
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: "sheetId"
+          in: "path"
+          required: true
+          description: "Google Sheet ID (overrides SHEET_ID environment variable)"
+          schema:
+            type: "string"
+            example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet tab"
+          schema:
+            type: "string"
+            example: "Class Data"
+      requestBody:
+        required: true
+        description: "JSON data to append as a new row"
+        content:
+          application/json:
+            schema:
+              type: "object"
+              additionalProperties: true
+            examples:
+              Example#1:
+                value:
+                  student_id: "S003"
+                  name: "Charlie Brown"
+                  grade: "A-"
+      responses:
+        "200":
+          description: "Successfully added new row"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: "Bad request - validation failed, invalid JSON, or missing parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/sheetId/{sheetId}/{sheetName}/schema:
+    get:
+      summary: "Get schema for custom sheet"
+      description: "Get schema information from sheet headers (A1-Z1) for validation using custom sheet ID"
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      parameters:
+        - name: "sheetId"
+          in: "path"
+          required: true
+          description: "Google Sheet ID (overrides SHEET_ID environment variable)"
+          schema:
+            type: "string"
+            example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet tab"
+          schema:
+            type: "string"
+            example: "Class Data"
+      responses:
+        "200":
+          description: "Successfully retrieved sheet schema"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchemaResponse"
+        "400":
+          description: "Bad request - missing parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: "API key authentication using X-API-Key header"
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: "API key authentication using Authorization Bearer header"
+
   schemas:
     SheetRowData:
       type: "object"
@@ -224,3 +481,46 @@ components:
         ok:
           type: "boolean"
           description: "Operation success status"
+      required:
+        - ok
+
+    ErrorResponse:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+          description: "Error type or message"
+        details:
+          oneOf:
+            - type: "string"
+            - type: "array"
+              items:
+                type: "string"
+          description: "Error details or validation messages"
+      required:
+        - error
+
+    SchemaResponse:
+      type: "object"
+      properties:
+        sheetName:
+          type: "string"
+          description: "Name of the sheet"
+        fields:
+          type: "object"
+          additionalProperties:
+            type: "object"
+            properties:
+              type:
+                type: "string"
+                enum: ["string", "integer", "double", "boolean"]
+                description: "Auto-detected field data type"
+              required:
+                type: "boolean"
+                description: "Whether field is required"
+            required:
+              - type
+              - required
+      required:
+        - sheetName
+        - fields

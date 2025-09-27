@@ -174,7 +174,7 @@ class SheetModule(
                     groups.forEach { (groupName, items) ->
                         add(buildJsonObject {
                             put("name", groupName)
-                            put("content", buildJsonArray {
+                            put("data", buildJsonArray {
                                 items.forEach { add(it) }
                             })
                         })
@@ -221,7 +221,7 @@ class SheetModule(
     }
 
     /**
-     * Get data with automatic format detection (grouped or flat)
+     * Get data with automatic format detection (grouped or flat) - OPTIMIZED
      * @param sheetName sheet name (tab)
      * @param perPage number of data rows (excluding header) - only for flat data
      * @param offset data row starting from 1 - only for flat data
@@ -232,10 +232,148 @@ class SheetModule(
         perPage: Int = 10,
         offset: Int = 1
     ): JsonElement = withContext(Dispatchers.IO) {
-        if (hasGroupingPattern(sheetName)) {
-            getGroupedJson(sheetName)
+
+        // Single API call to get all data - then decide format
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull() ?: emptyList()
+
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
+            .execute()
+            .getValues().orEmpty()
+
+        if (allData.size <= 1) {
+            return@withContext buildJsonArray {}
+        }
+
+        val dataRows = allData.drop(1)
+
+        // Check for grouping pattern inline
+        val hasGrouping = headerRow.indices.any { colIndex ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+            val totalRows = dataRows.size
+
+            // Grouping pattern: has value in first row AND has multiple but not all occurrences
+            firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
+        }
+
+        if (hasGrouping) {
+            // Build grouped format using already fetched data
+            buildGroupedJsonFromData(headerRow, dataRows)
         } else {
-            getJsonSlice(sheetName, perPage, offset).first
+            // Build flat format with pagination
+            buildFlatJsonFromData(headerRow, dataRows, perPage, offset)
+        }
+    }
+
+    /**
+     * Build grouped JSON from already fetched data
+     */
+    private fun buildGroupedJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>): JsonObject {
+        // Detect columns (same logic as getGroupedJson)
+        val groupingColumns = mutableSetOf<Int>()
+        val rootColumns = mutableSetOf<Int>()
+
+        headerRow.forEachIndexed { colIndex, _ ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+            val totalRows = dataRows.size
+
+            when {
+                firstRowValue.isNotBlank() && nonEmptyCount == 1 -> {
+                    rootColumns.add(colIndex)
+                }
+                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows -> {
+                    groupingColumns.add(colIndex)
+                }
+            }
+        }
+
+        return buildJsonObject {
+            // Add root level fields
+            val firstRow = dataRows.firstOrNull() ?: return@buildJsonObject
+            rootColumns.forEach { colIndex ->
+                val fieldName = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                val fieldValue = firstRow.getOrNull(colIndex)?.toString() ?: ""
+                if (fieldName.isNotBlank()) {
+                    put(fieldName, fieldValue)
+                }
+            }
+
+            // Process grouping columns
+            if (groupingColumns.isNotEmpty()) {
+                val groupColIndex = groupingColumns.first()
+                val groupFieldName = headerRow.getOrNull(groupColIndex)?.toString() ?: ""
+
+                val groups = mutableMapOf<String, MutableList<JsonObject>>()
+                var currentGroupName = ""
+
+                dataRows.forEach { row ->
+                    val groupValue = row.getOrNull(groupColIndex)?.toString() ?: ""
+
+                    if (groupValue.isNotBlank()) {
+                        currentGroupName = groupValue
+                    }
+
+                    if (currentGroupName.isNotBlank()) {
+                        val rowData = buildJsonObject {
+                            headerRow.forEachIndexed { colIndex, colName ->
+                                if (colIndex !in rootColumns && colIndex !in groupingColumns) {
+                                    val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                                    if (cellValue.isNotBlank()) {
+                                        put(colName.toString(), cellValue)
+                                    }
+                                }
+                            }
+                        }
+
+                        if (rowData.isNotEmpty()) {
+                            groups.getOrPut(currentGroupName) { mutableListOf() }.add(rowData)
+                        }
+                    }
+                }
+
+                val pluralFieldName = "${groupFieldName}s"
+                put(pluralFieldName, buildJsonArray {
+                    groups.forEach { (groupName, items) ->
+                        add(buildJsonObject {
+                            put("name", groupName)
+                            put("data", buildJsonArray {
+                                items.forEach { add(it) }
+                            })
+                        })
+                    }
+                })
+            }
+        }
+    }
+
+    /**
+     * Build flat JSON array from already fetched data with pagination
+     */
+    private fun buildFlatJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>, perPage: Int, offset: Int): JsonArray {
+        val startIndex = offset - 1
+        val endIndex = minOf(startIndex + perPage, dataRows.size)
+        val paginatedRows = if (startIndex < dataRows.size) dataRows.subList(startIndex, endIndex) else emptyList()
+
+        return buildJsonArray {
+            paginatedRows.forEach { row ->
+                add(buildJsonObject {
+                    headerRow.forEachIndexed { i, col ->
+                        val cellValue = row.getOrNull(i)?.toString() ?: ""
+                        put(col.toString(), cellValue)
+                    }
+                })
+            }
         }
     }
 

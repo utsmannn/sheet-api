@@ -6,11 +6,15 @@ A Kotlin REST API built with Ktor for managing Google Sheets data with automatic
 
 | Feature | Description |
 |---------|-------------|
+| **🔥 Auto Hierarchical Grouping** | Automatically detects merged cell patterns and returns nested JSON structures |
+| **📊 Dynamic Sheet ID Support** | Use path parameters to access any Google Sheet without changing environment variables |
+| **🔍 Smart Data Detection** | Auto-detects flat vs hierarchical data structures for optimal response format |
 | **Google Sheets Integration** | Read and write data to Google Sheets using Google Sheets API v4 |
 | **Auto Schema Detection** | Automatically detects data types (integer, double, boolean, string) from existing sheet data |
 | **JSON Validation** | Validates POST requests against detected schema with detailed error messages |
 | **API Key Authentication** | Secure API protection with Base64-encoded keys and timestamp validation |
-| **Pagination Support** | Get paginated data with `per_page` and `offset` parameters |
+| **Pagination Support** | Get paginated data with `per_page` and `offset` parameters (for flat data) |
+| **Performance Optimized** | Single API call optimization for faster response times |
 | **OpenAPI Documentation** | Interactive Swagger UI available at `/swagger` |
 | **CORS Support** | Cross-Origin Resource Sharing enabled for web applications |
 
@@ -81,30 +85,105 @@ For a more manageable setup, you can use `docker-compose`.
 
 > ⚠️ **All API endpoints require authentication** - See [API Authentication](#api-authentication) section for details.
 
+### 🔥 Dynamic Sheet Access
+
+You can access any Google Sheet using two methods:
+
+1. **Default Sheet** (uses `SHEET_ID` environment variable):
+   ```
+   GET /api/sheets/{sheetName}
+   ```
+
+2. **Custom Sheet ID** (override with path parameter):
+   ```
+   GET /api/sheetId/{sheetId}/{sheetName}
+   ```
+
 ### Get Sheet Data
 ```bash
 GET /api/sheets/{sheetName}?per_page=10&offset=1
+GET /api/sheetId/{sheetId}/{sheetName}?per_page=10&offset=1
 # Requires: X-API-Key or Authorization Bearer header
 ```
-Retrieves paginated data from specified Google Sheet.
+Retrieves data from specified Google Sheet with **automatic hierarchical grouping detection**.
+
+**🔥 New Feature: Auto-Grouping**
+API automatically detects merged cell patterns in your spreadsheet and returns:
+- **Hierarchical JSON**: For data with grouping structure (nested objects)
+- **Flat JSON Array**: For regular tabular data with pagination
 
 **Headers:**
 - `X-API-Key: YOUR_API_KEY` (required)
 
 **Parameters:**
 - `sheetName` (path): Name of the Google Sheet tab
-- `per_page` (query): Number of rows per page (default: 10)
-- `offset` (query): Starting row number (default: 1)
+- `sheetId` (path, optional): Specific Google Sheet ID (overrides SHEET_ID env var)
+- `per_page` (query): Number of rows per page (default: 10, only for flat data)
+- `offset` (query): Starting row number (default: 1, only for flat data)
 
-**Example:**
+**Example - Basic Usage:**
 ```bash
 curl -H "X-API-Key: YOUR_API_KEY" \
   "http://localhost:8910/api/sheets/MySheet?per_page=5&offset=1"
 ```
 
+**Example - Custom Sheet ID:**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheetId/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/Class%20Data"
+```
+
+**Response Types:**
+
+*Flat Data (with pagination):*
+```json
+[
+  {"id": 1, "name": "John", "email": "john@example.com"},
+  {"id": 2, "name": "Jane", "email": "jane@example.com"}
+]
+```
+*Headers: `X-Total-Count: 150`*
+
+*Hierarchical Data (auto-detected grouping):*
+```json
+{
+  "Provinces": [
+    {
+      "name": "DKI Jakarta",
+      "data": [
+        {
+          "District": "Tanah Abang",
+          "Population": "87450",
+          "Area": "7.39",
+          "Density": "11833.6"
+        },
+        {
+          "District": "Menteng",
+          "Population": "65420",
+          "Area": "5.12",
+          "Density": "12777.3"
+        }
+      ]
+    },
+    {
+      "name": "Jawa Barat",
+      "data": [
+        {
+          "District": "Cicendo",
+          "Population": "85420",
+          "Area": "12.5",
+          "Density": "6833.6"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ### Get Sheet Schema
 ```bash
 GET /api/sheets/{sheetName}/schema
+GET /api/sheetId/{sheetId}/{sheetName}/schema
 # Requires: X-API-Key or Authorization Bearer header
 ```
 Returns the detected schema from sheet headers (A1-Z1) with auto-detected data types.
@@ -116,6 +195,12 @@ Returns the detected schema from sheet headers (A1-Z1) with auto-detected data t
 ```bash
 curl -H "X-API-Key: YOUR_API_KEY" \
   "http://localhost:8910/api/sheets/MySheet/schema"
+```
+
+**Example with Custom Sheet ID:**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheetId/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/MySheet/schema"
 ```
 
 **Response:**
@@ -134,6 +219,7 @@ curl -H "X-API-Key: YOUR_API_KEY" \
 ### Add New Row
 ```bash
 POST /api/sheets/{sheetName}
+POST /api/sheetId/{sheetId}/{sheetName}
 # Requires: X-API-Key or Authorization Bearer header
 ```
 Appends a new row to the sheet with automatic validation against detected schema.
@@ -161,6 +247,15 @@ curl -X POST \
   "http://localhost:8910/api/sheets/MySheet"
 ```
 
+**Example with Custom Sheet ID:**
+```bash
+curl -X POST \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"district": "New District", "population": 75000}' \
+  "http://localhost:8910/api/sheetId/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/MySheet"
+```
+
 **Success Response:**
 ```json
 {"ok": true}
@@ -179,10 +274,15 @@ curl -X POST \
 Set the following environment variables:
 
 ```bash
-export SHEET_ID="your_google_sheet_id"
+export SHEET_ID="your_default_google_sheet_id"  # Optional: fallback when no sheetId in path
 export CREDENTIAL_PATH="/path/to/service-account-key.json"
 export API_SECRET_KEY="your-secret-key-for-api-key-generation"
 ```
+
+**Note:** `SHEET_ID` is now optional. You can:
+- Set it as default for `/api/sheets/{sheetName}` endpoints
+- Override it using `/api/sheetId/{sheetId}/{sheetName}` endpoints
+- Mix both approaches in the same application
 
 ## API Authentication
 
@@ -270,6 +370,77 @@ curl -H "Authorization: Bearer YOUR_API_KEY" http://localhost:8910/api/sheets/My
 
 💡 **Quick Tip**: For manual testing, get current timestamp from https://currentmillis.com/ and encode at https://www.base64encode.org/
 
+## 🔥 Hierarchical Data Grouping
+
+The API automatically detects merged cell patterns in your Google Sheets and converts them into nested JSON structures.
+
+### How Auto-Detection Works
+
+1. **Pattern Recognition**: Analyzes your spreadsheet for columns with merged cells
+2. **Smart Grouping**: Identifies parent-child relationships automatically
+3. **Response Format**: Returns hierarchical JSON instead of flat arrays
+
+### Example Input (Google Sheet)
+```
+Province    | Regency      | District     | Population
+DKI Jakarta | Jakarta Pusat| Tanah Abang  | 87450
+            |              | Menteng      | 65420
+            | Jakarta Barat| Tambora      | 95480
+Jawa Barat  | Bandung      | Cicendo      | 85420
+```
+
+### Example Output (Auto-Grouped JSON)
+```json
+{
+  "Provinces": [
+    {
+      "name": "DKI Jakarta",
+      "data": [
+        {
+          "Regency": "Jakarta Pusat",
+          "District": "Tanah Abang",
+          "Population": "87450",
+          "Area": "7.39",
+          "Density": "11833.6"
+        },
+        {
+          "Regency": "Jakarta Pusat",
+          "District": "Menteng",
+          "Population": "65420",
+          "Area": "5.12",
+          "Density": "12777.3"
+        },
+        {
+          "Regency": "Jakarta Barat",
+          "District": "Tambora",
+          "Population": "95480",
+          "Area": "11.2",
+          "Density": "8525.0"
+        }
+      ]
+    },
+    {
+      "name": "Jawa Barat",
+      "data": [
+        {
+          "Regency": "Bandung",
+          "District": "Cicendo",
+          "Population": "85420",
+          "Area": "12.5",
+          "Density": "6833.6"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Performance Optimization
+
+- **Single API Call**: Optimized to fetch and analyze data in one request
+- **Smart Detection**: Inline pattern recognition without extra API calls
+- **Fallback Support**: Automatically falls back to flat JSON for non-grouped data
+
 ## Data Type Detection
 
 The API automatically detects column data types by analyzing sample data:
@@ -307,8 +478,22 @@ To build or run the project, use one of the following tasks:
 If the server starts successfully, you'll see the following output:
 
 ```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8910
+2025-09-28 00:25:41.273 [main] INFO  Application - Application started in 0.85 seconds.
+2025-09-28 00:25:41.352 [DefaultDispatcher-worker-1] INFO  Application - Responding at http://0.0.0.0:8910
+```
+
+### Testing the API
+
+Once running, you can test the hierarchical grouping feature:
+
+```bash
+# Test with your data
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheets/YourSheetName"
+
+# Test with custom sheet ID
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheetId/CUSTOM_SHEET_ID/YourSheetName"
 ```
 
 ## Landing Page
