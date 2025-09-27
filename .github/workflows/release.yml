@@ -70,10 +70,8 @@ jobs:
 
       - name: Build Docker image with Gradle
         run: |
-          # Build the image using the unique tag
-          ./gradlew buildImage \
-            -Pktor.docker.localImageName=utsmannn/sheet-api \
-            -Pktor.docker.imageTag=${{ env.UNIQUE_TAG }}
+          # Build the image using the unique tag directly to Docker daemon
+          ./gradlew jibDockerBuild --image=utsmannn/sheet-api:${{ env.UNIQUE_TAG }}
 
       - name: Create additional Docker tags
         run: |
