@@ -1,25 +1,94 @@
-# sheet-api
+# Sheet API
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
-
-Here are some useful links to get you started:
-
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+A Kotlin REST API built with Ktor for managing Google Sheets data with automatic schema detection and validation.
 
 ## Features
 
-Here's a list of features included in this project:
+| Feature | Description |
+|---------|-------------|
+| **Google Sheets Integration** | Read and write data to Google Sheets using Google Sheets API v4 |
+| **Auto Schema Detection** | Automatically detects data types (integer, double, boolean, string) from existing sheet data |
+| **JSON Validation** | Validates POST requests against detected schema with detailed error messages |
+| **Pagination Support** | Get paginated data with `per_page` and `offset` parameters |
+| **OpenAPI Documentation** | Interactive Swagger UI available at `/swagger` |
+| **CORS Support** | Cross-Origin Resource Sharing enabled for web applications |
 
-| Name                                                                   | Description                                                                        |
-| ------------------------------------------------------------------------|------------------------------------------------------------------------------------ |
-| [Routing](https://start.ktor.io/p/routing)                             | Provides a structured routing DSL                                                  |
-| [OpenAPI](https://start.ktor.io/p/openapi)                             | Serves OpenAPI documentation                                                       |
-| [Compression](https://start.ktor.io/p/compression)                     | Compresses responses using encoding algorithms like GZIP                           |
-| [Content Negotiation](https://start.ktor.io/p/content-negotiation)     | Provides automatic content conversion according to Content-Type and Accept headers |
-| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library                     |
-| [CORS](https://start.ktor.io/p/cors)                                   | Enables Cross-Origin Resource Sharing (CORS)                                       |
+## API Endpoints
+
+### Get Sheet Data
+```
+GET /api/sheets/{sheetName}?per_page=10&offset=1
+```
+Retrieves paginated data from specified Google Sheet.
+
+**Parameters:**
+- `sheetName` (path): Name of the Google Sheet tab
+- `per_page` (query): Number of rows per page (default: 10)
+- `offset` (query): Starting row number (default: 1)
+
+### Get Sheet Schema
+```
+GET /api/sheets/{sheetName}/schema
+```
+Returns the detected schema from sheet headers (A1-Z1) with auto-detected data types.
+
+**Response:**
+```json
+{
+  "sheetName": "MySheet",
+  "fields": {
+    "id": {"type": "integer", "required": true},
+    "name": {"type": "string", "required": true},
+    "email": {"type": "string", "required": true},
+    "active": {"type": "boolean", "required": true}
+  }
+}
+```
+
+### Add New Row
+```
+POST /api/sheets/{sheetName}
+```
+Appends a new row to the sheet with automatic validation against detected schema.
+
+**Request Body:**
+```json
+{
+  "id": 123,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "active": "true"
+}
+```
+
+## Configuration
+
+Set the following environment variables:
+
+```bash
+export SHEET_ID="your_google_sheet_id"
+export CREDENTIAL_PATH="/path/to/service-account-key.json"
+```
+
+## Data Type Detection
+
+The API automatically detects column data types by analyzing sample data:
+
+- **Integer**: Values that can be parsed as integers (e.g., "123", "0")
+- **Double**: Values that can be parsed as floating-point numbers (e.g., "12.34", "0.5")
+- **Boolean**: Values like "true", "false", "1", "0", "yes", "no"
+- **String**: Default fallback for all other values
+
+## Ktor Framework Features
+
+| Name | Description |
+|------|-------------|
+| [Routing](https://start.ktor.io/p/routing) | Provides a structured routing DSL |
+| [OpenAPI](https://start.ktor.io/p/openapi) | Serves OpenAPI documentation |
+| [Compression](https://start.ktor.io/p/compression) | Compresses responses using encoding algorithms like GZIP |
+| [Content Negotiation](https://start.ktor.io/p/content-negotiation) | Provides automatic content conversion according to Content-Type and Accept headers |
+| [kotlinx.serialization](https://start.ktor.io/p/kotlinx-serialization) | Handles JSON serialization using kotlinx.serialization library |
+| [CORS](https://start.ktor.io/p/cors) | Enables Cross-Origin Resource Sharing (CORS) |
 
 ## Building & Running
 
