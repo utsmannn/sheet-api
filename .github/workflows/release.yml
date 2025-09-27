@@ -67,7 +67,6 @@ jobs:
 
       - name: Build frontend assets
         run: ./build-frontend.sh
-        working-directory: ./landingpage
 
       - name: Build Docker image with Gradle
         run: |
