@@ -8,14 +8,19 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.*
 
 fun Route.sheetRouting() {
+    get("/sheets") {
+        val sheetNames = SheetModule.getSheetNames()
+        call.respond(sheetNames)
+    }
+
     get("/sheets/{sheetName}") {
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val perPage = call.request.queryParameters["per_page"]?.toIntOrNull() ?: 10
         val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
 
-        val (jsonBody, total) = SheetModule.getJsonSlice(sheetName, perPage, offset)
+        val (arr, total) = SheetModule.getJsonSlice(sheetName, perPage, offset)
         call.response.header("X-Total-Count", total.toString())
-        call.respondText(jsonBody, ContentType.Application.Json)
+        call.respond(arr)
     }
 
     get("/sheets/{sheetName}/schema") {
@@ -34,40 +39,40 @@ fun Route.sheetRouting() {
             })
         }
 
-        call.respondText(schemaJson.toString(), ContentType.Application.Json)
+        call.respond(schemaJson)
     }
 
     post("/sheets/{sheetName}") {
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val body = call.receiveText()
 
+        val lenientJson = Json { isLenient = true; ignoreUnknownKeys = true }
+
         try {
-            val jsonObject = Json.parseToJsonElement(body).jsonObject
+            val jsonObject = lenientJson.parseToJsonElement(body).jsonObject
             val schema = SheetModule.getSheetSchema(sheetName)
             val validationErrors = SheetModule.validateJsonSchema(jsonObject, schema)
 
             if (validationErrors.isNotEmpty()) {
                 call.respond(
                     HttpStatusCode.BadRequest,
-                    buildJsonObject {
-                        put("error", "Validation failed")
-                        put("details", buildJsonArray {
-                            validationErrors.forEach { add(it) }
-                        })
-                    }.toString()
+                    mapOf(
+                        "error" to "Validation failed",
+                        "details" to validationErrors
+                    )
                 )
                 return@post
             }
 
             SheetModule.appendRowFromJson(sheetName, body)
-            call.respondText("""{"ok":true}""", ContentType.Application.Json)
+            call.respond(mapOf("ok" to true))
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.BadRequest,
-                buildJsonObject {
-                    put("error", "Invalid JSON format")
-                    put("details", e.message ?: "Unknown error")
-                }.toString()
+                mapOf(
+                    "error" to "Invalid JSON format",
+                    "details" to (e.message ?: "Unknown error")
+                )
             )
         }
     }

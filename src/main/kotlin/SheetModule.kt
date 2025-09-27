@@ -39,7 +39,7 @@ object SheetModule {
         sheetName: String,
         perPage: Int = 10,
         offset: Int = 1
-    ): Pair<String, Int> = withContext(Dispatchers.IO) {
+    ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
 
         val totalRows = sheets.spreadsheets().values()
             .get(spreadsheetId, "$sheetName!A:A")
@@ -64,13 +64,14 @@ object SheetModule {
             data.forEach { row ->
                 add(buildJsonObject {
                     headerRow.forEachIndexed { i, col ->
-                        put(col.toString(), row.getOrNull(i).toString())
+                        val cellValue = row.getOrNull(i)?.toString() ?: ""
+                        put(col.toString(), cellValue)
                     }
                 })
             }
         }
 
-        Pair(arr.toString(), totalRows)
+        Pair(arr, totalRows)
     }
 
     /**
@@ -213,4 +214,13 @@ object SheetModule {
                 .setValueInputOption("RAW")
                 .execute()
         }
+
+    /**
+     * Get list of sheet names (tabs) in the spreadsheet
+     * @return List of sheet titles
+     */
+    suspend fun getSheetNames(): List<String> = withContext(Dispatchers.IO) {
+        val spreadsheet = sheets.spreadsheets().get(spreadsheetId).execute()
+        spreadsheet.sheets.mapNotNull { it.properties?.title }
+    }
 }
