@@ -11,6 +11,13 @@ application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
 
+ktor {
+    docker {
+        localImageName.set("sheet-to-api")
+        imageTag.set("latest")
+    }
+}
+
 dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.openapi)

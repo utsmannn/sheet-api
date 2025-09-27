@@ -2,14 +2,13 @@ version: '3.8'
 
 services:
   sheet-api:
-    image: ktor-docker-image
+    image: sheet-to-api
     container_name: sheet-api-kotlin
     ports:
       - "8910:8910"
     environment:
       - SHEET_ID=${SHEET_ID}
-#      - CREDENTIAL_PATH=/app/credentials/service-account-key.json
-      - CREDENTIAL_PATH=${CREDENTIAL_PATH}
+      - CREDENTIAL_PATH=/app/credentials/service-account-key.json
       - JAVA_OPTS=-Xmx512m -Xms256m
     volumes:
       - ./credentials:/app/credentials:ro

@@ -37,3 +37,4 @@ out/
 
 credential.json
 /.env
+/credentials/
