@@ -14,6 +14,69 @@ A Kotlin REST API built with Ktor for managing Google Sheets data with automatic
 | **OpenAPI Documentation** | Interactive Swagger UI available at `/swagger` |
 | **CORS Support** | Cross-Origin Resource Sharing enabled for web applications |
 
+## Installation with Docker
+
+You can run the application using the pre-built Docker image from Docker Hub.
+
+1.  **Pull the image:**
+    ```bash
+    docker pull utsmannn/sheet-api:latest
+    ```
+
+2.  **Run the container:**
+    ```bash
+    docker run -d \
+      -p 8910:8910 \
+      -e SHEET_ID="your_google_sheet_id" \
+      -e API_SECRET_KEY="your-secret-key" \
+      -e CREDENTIAL_PATH="/app/credentials/service-account.json" \
+      -v /path/on/your/machine/service-account.json:/app/credentials/service-account.json \
+      --name sheet-api \
+      utsmannn/sheet-api:latest
+    ```
+
+    **Important:**
+    - Replace `"your_google_sheet_id"` and `"your-secret-key"` with your actual configuration.
+    - Replace `/path/on/your/machine/service-account.json` with the absolute path to your Google service account JSON key file on your local machine.
+    - The container will restart automatically unless stopped.
+
+### Using Docker Compose
+
+For a more manageable setup, you can use `docker-compose`.
+
+1.  **Create a `docker-compose.yml` file:**
+    ```yaml
+    version: '3.8'
+
+    services:
+      sheet-api:
+        image: utsmannn/sheet-api:latest
+        container_name: sheet-api-kotlin
+        ports:
+          - "8910:8910"
+        environment:
+          - SHEET_ID=${SHEET_ID}
+          - API_SECRET_KEY=${API_SECRET_KEY}
+          - CREDENTIAL_PATH=/app/credentials/service-account-key.json
+        volumes:
+          - ./credentials:/app/credentials:ro
+        restart: unless-stopped
+
+    ```
+
+2.  **Create a `.env` file** in the same directory with your secrets:
+    ```
+    SHEET_ID=your_google_sheet_id
+    API_SECRET_KEY=your-secret-key
+    ```
+
+3.  **Create a `credentials` directory** and place your `service-account-key.json` file inside it.
+
+4.  **Run the container:**
+    ```bash
+    docker-compose up -d
+    ```
+
 ## API Endpoints
 
 > ⚠️ **All API endpoints require authentication** - See [API Authentication](#api-authentication) section for details.
@@ -289,4 +352,8 @@ npm install
 npm run build
 cp -r dist/* ../src/main/resources/static/
 ```
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 

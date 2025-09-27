@@ -7,10 +7,12 @@ interface ApiResponse {
 
 export default function ApiDemo() {
   const [apiKey, setApiKey] = useState('')
-  const [sheetName, setSheetName] = useState('MySheet')
+  const [sheetName, setSheetName] = useState('')
+  const [sheetNames, setSheetNames] = useState<string[]>([])
   const [endpoint, setEndpoint] = useState('GET /api/sheets/{sheetName}')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
 
   const secretKey = import.meta.env.VITE_API_SECRET_KEY || 'default-secret-key'
 
@@ -22,6 +24,37 @@ export default function ApiDemo() {
       setApiKey(encodedKey)
     }
   }, [apiKey, secretKey])
+
+  useEffect(() => {
+    const fetchSheetNames = async () => {
+      if (!apiKey) return
+
+      try {
+        const res = await fetch('/api/sheets', {
+          headers: {
+            'X-API-Key': apiKey,
+          },
+        })
+        const data = await res.json()
+        if (Array.isArray(data)) {
+          setSheetNames(data)
+          if (data.length > 0) {
+            setSheetName(data[0])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch sheet names:', error)
+      }
+    }
+    fetchSheetNames()
+  }, [apiKey])
+
+  useEffect(() => {
+    if (apiKey && sheetName && initialLoad) {
+      testEndpoint()
+      setInitialLoad(false)
+    }
+  }, [apiKey, sheetName, initialLoad])
 
   const testEndpoint = async () => {
     if (!apiKey.trim()) {
@@ -41,15 +74,6 @@ export default function ApiDemo() {
         } else {
           url = `/api/sheets/${sheetName}?per_page=5&offset=1`
         }
-      } else if (endpoint.includes('POST')) {
-        url = `/api/sheets/${sheetName}`
-        method = 'POST'
-        body = JSON.stringify({
-          id: 123,
-          name: "John Doe",
-          email: "john@example.com",
-          active: "true"
-        })
       }
 
       const headers: Record<string, string> = {
@@ -152,13 +176,17 @@ export default function ApiDemo() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Sheet Name
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={sheetName}
                     onChange={(e) => setSheetName(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Sheet name"
-                  />
+                  >
+                    {sheetNames.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -172,7 +200,6 @@ export default function ApiDemo() {
                   >
                     <option value="GET /api/sheets/{sheetName}">GET /api/sheets/{sheetName} - Get sheet data</option>
                     <option value="GET /api/sheets/{sheetName}/schema">GET /api/sheets/{sheetName}/schema - Get schema</option>
-                    <option value="POST /api/sheets/{sheetName}">POST /api/sheets/{sheetName} - Add new row</option>
                   </select>
                 </div>
 

@@ -13,8 +13,8 @@ application {
 
 ktor {
     docker {
-        localImageName.set("sheet-to-api")
-        imageTag.set("latest")
+        localImageName.set("utsmannn/sheet-api")
+        imageTag.set("0.0.1")
     }
 }
 

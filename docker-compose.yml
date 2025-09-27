@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   sheet-api:
-    image: sheet-to-api
+    image: utsmannn/sheet-api:latest
     container_name: sheet-api-kotlin
     ports:
       - "8910:8910"
