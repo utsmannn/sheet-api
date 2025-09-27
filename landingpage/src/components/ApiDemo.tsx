@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ApiResponse {
   status: number
@@ -11,6 +11,17 @@ export default function ApiDemo() {
   const [endpoint, setEndpoint] = useState('GET /api/sheets/{sheetName}')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const secretKey = import.meta.env.VITE_API_SECRET_KEY || 'default-secret-key'
+
+  useEffect(() => {
+    if (apiKey === '') {
+      const timestamp = Date.now().toString()
+      const keyString = `${secretKey}:${timestamp}`
+      const encodedKey = btoa(keyString)
+      setApiKey(encodedKey)
+    }
+  }, [apiKey, secretKey])
 
   const testEndpoint = async () => {
     if (!apiKey.trim()) {
@@ -71,8 +82,8 @@ export default function ApiDemo() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
+    <div className="w-full py-16 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full">
         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
           API Demo
         </h2>
@@ -81,76 +92,120 @@ export default function ApiDemo() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                API Key
-              </label>
-              <input
-                type="text"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                placeholder="Enter your API key"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sheet Name
-              </label>
-              <input
-                type="text"
-                value={sheetName}
-                onChange={(e) => setSheetName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Sheet name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Endpoint
-              </label>
-              <select
-                value={endpoint}
-                onChange={(e) => setEndpoint(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="GET /api/sheets/{sheetName}">GET /api/sheets/{sheetName} - Get sheet data</option>
-                <option value="GET /api/sheets/{sheetName}/schema">GET /api/sheets/{sheetName}/schema - Get schema</option>
-                <option value="POST /api/sheets/{sheetName}">POST /api/sheets/{sheetName} - Add new row</option>
-              </select>
-            </div>
-
-            <button
-              onClick={testEndpoint}
-              disabled={loading}
-              className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 transition-colors"
-            >
-              {loading ? 'Testing...' : 'Test Endpoint'}
-            </button>
+          {/* Left: Google Sheets Iframe */}
+          <div 
+            className="border rounded-lg overflow-hidden h-[600px] relative isolate-iframe"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onFocus={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onScroll={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onWheel={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            tabIndex={-1}
+          >
+            <iframe
+              src="https://docs.google.com/spreadsheets/d/1xemyHC3IG4TT0ubXXvi0FJdlDpHFueS3XSMB9yTBMqE/edit?usp=sharing"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              scrolling="no"
+              className="w-full h-full"
+              title="Live Google Sheet Preview"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+              allow="fullscreen"
+            ></iframe>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Response
-            </label>
-            <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-96 overflow-auto font-mono text-sm">
-              {response ? (
+          {/* Right: API Demo Container */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
                 <div>
-                  <div className={`mb-2 ${response.status >= 200 && response.status < 300 ? 'text-green-400' : 'text-red-400'}`}>
-                    Status: {response.status}
-                  </div>
-                  <pre className="whitespace-pre-wrap text-gray-300">
-                    {JSON.stringify(response.data, null, 2)}
-                  </pre>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    API Key (Auto-generated)
+                  </label>
+                  <input
+                    type="text"
+                    value={apiKey}
+                    readOnly
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-mono text-sm"
+                    placeholder="Auto-generating API key..."
+                  />
                 </div>
-              ) : (
-                <div className="text-gray-500">
-                  Click "Test Endpoint" to see the response here.
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sheet Name
+                  </label>
+                  <input
+                    type="text"
+                    value={sheetName}
+                    onChange={(e) => setSheetName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Sheet name"
+                  />
                 </div>
-              )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Endpoint
+                  </label>
+                  <select
+                    value={endpoint}
+                    onChange={(e) => setEndpoint(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="GET /api/sheets/{sheetName}">GET /api/sheets/{sheetName} - Get sheet data</option>
+                    <option value="GET /api/sheets/{sheetName}/schema">GET /api/sheets/{sheetName}/schema - Get schema</option>
+                    <option value="POST /api/sheets/{sheetName}">POST /api/sheets/{sheetName} - Add new row</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={testEndpoint}
+                  disabled={loading}
+                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                >
+                  {loading ? 'Testing...' : 'Test Endpoint'}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Response
+                </label>
+                <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-[600px] overflow-auto font-mono text-sm">
+                  {response ? (
+                    <div>
+                      <div className={`mb-2 ${response.status >= 200 && response.status < 300 ? 'text-green-400' : 'text-red-400'}`}>
+                        Status: {response.status}
+                      </div>
+                      <pre className="whitespace-pre-wrap text-gray-300">
+                        {JSON.stringify(response.data, null, 2)}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="text-gray-500">
+                      Click "Test Endpoint" to see the response here.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

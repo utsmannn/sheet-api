@@ -38,3 +38,4 @@ out/
 credential.json
 /.env
 /credentials/
+/landingpage/.env
