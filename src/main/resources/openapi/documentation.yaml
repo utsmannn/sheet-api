@@ -1,14 +1,16 @@
 openapi: "3.0.3"
 info:
-  title: "Application API"
-  description: "Application API"
-  version: "1.0.0"
+  title: "Sheet API"
+  description: "API for managing Google Sheets data"
+  version: "0.0.1"
+  contact:
+    name: "Utsman"
 servers:
   - url: "http://0.0.0.0:8080"
 paths:
   /:
     get:
-      description: "Hello World!"
+      description: "Health check endpoint"
       responses:
         "200":
           description: "OK"
@@ -18,6 +20,130 @@ paths:
                 type: "string"
               examples:
                 Example#1:
-                  value: "Hello World!"
+                  value: "Hello World! : /path/to/credentials.json"
+
+  /api/sheets/{sheetName}:
+    get:
+      summary: "Get sheet data"
+      description: "Retrieve data from a Google Sheet with pagination"
+      parameters:
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet"
+          schema:
+            type: "string"
+            example: "MySheet"
+        - name: "per_page"
+          in: "query"
+          required: false
+          description: "Number of rows per page (default: 10)"
+          schema:
+            type: "integer"
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: "offset"
+          in: "query"
+          required: false
+          description: "Starting row number (default: 1)"
+          schema:
+            type: "integer"
+            minimum: 1
+            default: 1
+      responses:
+        "200":
+          description: "Successful response with sheet data"
+          headers:
+            X-Total-Count:
+              description: "Total number of rows in the sheet"
+              schema:
+                type: "integer"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  additionalProperties: true
+              examples:
+                Example#1:
+                  value:
+                    - id: 1
+                      name: "John Doe"
+                      email: "john@example.com"
+                    - id: 2
+                      name: "Jane Smith"
+                      email: "jane@example.com"
+        "400":
+          description: "Bad request - missing sheetName parameter"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "sheetName required"
+
+    post:
+      summary: "Add new row to sheet"
+      description: "Append a new row to the Google Sheet"
+      parameters:
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet"
+          schema:
+            type: "string"
+            example: "MySheet"
+      requestBody:
+        required: true
+        description: "JSON data to append as a new row"
+        content:
+          application/json:
+            schema:
+              type: "object"
+              additionalProperties: true
+            examples:
+              Example#1:
+                value:
+                  name: "New User"
+                  email: "newuser@example.com"
+                  age: 25
+      responses:
+        "200":
+          description: "Successfully added new row"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  ok:
+                    type: "boolean"
+              examples:
+                Example#1:
+                  value:
+                    ok: true
+        "400":
+          description: "Bad request - missing sheetName parameter or invalid JSON"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "sheetName required"
+
 components:
-  schemas: {}
+  schemas:
+    SheetRowData:
+      type: "object"
+      additionalProperties: true
+      description: "Dynamic object representing a row in the sheet"
+
+    SuccessResponse:
+      type: "object"
+      properties:
+        ok:
+          type: "boolean"
+          description: "Operation success status"
