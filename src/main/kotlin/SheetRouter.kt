@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.json.*
 
 fun Route.sheetRouting() {
-    get("/api/sheets/{sheetName}") {
+    get("/sheets/{sheetName}") {
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val perPage = call.request.queryParameters["per_page"]?.toIntOrNull() ?: 10
         val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
@@ -18,7 +18,7 @@ fun Route.sheetRouting() {
         call.respondText(jsonBody, ContentType.Application.Json)
     }
 
-    get("/api/sheets/{sheetName}/schema") {
+    get("/sheets/{sheetName}/schema") {
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val schema = SheetModule.getSheetSchema(sheetName)
 
@@ -37,7 +37,7 @@ fun Route.sheetRouting() {
         call.respondText(schemaJson.toString(), ContentType.Application.Json)
     }
 
-    post("/api/sheets/{sheetName}") {
+    post("/sheets/{sheetName}") {
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
         val body = call.receiveText()
 

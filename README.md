@@ -248,3 +248,45 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8910
 ```
 
+## Landing Page
+
+The API includes a built-in React TypeScript landing page that provides:
+
+- **Interactive API Key Generator** - Generate and copy API keys directly from the browser
+- **Live API Demo** - Test endpoints with real requests and responses
+- **Code Examples** - Ready-to-use code snippets for cURL, JavaScript, and Python
+- **Feature Overview** - Complete documentation and feature showcase
+
+### Accessing the Landing Page
+
+Once the server is running, visit: **http://localhost:8910/**
+
+The landing page provides a user-friendly interface for:
+- Understanding API capabilities
+- Generating API keys without command line tools
+- Testing API endpoints interactively
+- Getting integration code examples
+
+### Development
+
+The landing page is built with:
+- **React** with TypeScript for type safety
+- **Tailwind CSS** for responsive styling
+- **Vite** for fast development and building
+
+To rebuild the landing page after making changes:
+
+```bash
+# Build and deploy the landing page
+./build-frontend.sh
+```
+
+Or manually:
+
+```bash
+cd landingpage
+npm install
+npm run build
+cp -r dist/* ../src/main/resources/static/
+```
+

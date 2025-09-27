@@ -85,12 +85,13 @@ fun Application.configureApiKeyAuth() {
         val request = call.request
         val path = request.uri
 
-        // Skip authentication for public endpoints
+        // Skip authentication for public endpoints and static files
         if (path == "/" ||
             path.startsWith("/health") ||
             path.startsWith("/swagger") ||
             path.startsWith("/openapi") ||
-            path.startsWith("/docs")) {
+            path.startsWith("/docs") ||
+            !path.startsWith("/api")) {
             return@intercept
         }
 
