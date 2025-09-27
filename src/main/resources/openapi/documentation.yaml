@@ -22,6 +22,64 @@ paths:
                 Example#1:
                   value: "Hello World! : /path/to/credentials.json"
 
+  /api/sheets/{sheetName}/schema:
+    get:
+      summary: "Get sheet schema"
+      description: "Get schema information from sheet headers (A1-Z1) for validation"
+      parameters:
+        - name: "sheetName"
+          in: "path"
+          required: true
+          description: "Name of the Google Sheet"
+          schema:
+            type: "string"
+            example: "MySheet"
+      responses:
+        "200":
+          description: "Successfully retrieved sheet schema"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  sheetName:
+                    type: "string"
+                    description: "Name of the sheet"
+                  fields:
+                    type: "object"
+                    additionalProperties:
+                      type: "object"
+                      properties:
+                        type:
+                          type: "string"
+                          description: "Field data type (default: string)"
+                        required:
+                          type: "boolean"
+                          description: "Whether field is required"
+              examples:
+                Example#1:
+                  value:
+                    sheetName: "MySheet"
+                    fields:
+                      id:
+                        type: "string"
+                        required: true
+                      name:
+                        type: "string"
+                        required: true
+                      email:
+                        type: "string"
+                        required: true
+        "400":
+          description: "Bad request - missing sheetName parameter"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+              examples:
+                Example#1:
+                  value: "sheetName required"
+
   /api/sheets/{sheetName}:
     get:
       summary: "Get sheet data"
@@ -125,14 +183,33 @@ paths:
                   value:
                     ok: true
         "400":
-          description: "Bad request - missing sheetName parameter or invalid JSON"
+          description: "Bad request - validation failed, invalid JSON, or missing sheetName"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: "string"
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error type"
+                  details:
+                    oneOf:
+                      - type: "string"
+                      - type: "array"
+                        items:
+                          type: "string"
+                    description: "Error details or validation messages"
               examples:
-                Example#1:
-                  value: "sheetName required"
+                ValidationError:
+                  value:
+                    error: "Validation failed"
+                    details:
+                      - "Missing required field: email"
+                      - "Unknown field: invalidField"
+                JSONError:
+                  value:
+                    error: "Invalid JSON format"
+                    details: "Unexpected character at line 1"
 
 components:
   schemas:
