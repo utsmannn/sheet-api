@@ -14,8 +14,6 @@ jobs:
   build-and-publish:
     name: Build and Publish Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: Check out repository
