@@ -4,3 +4,4 @@ ktor:
             - com.utsman.ApplicationKt.module
     deployment:
         port: 8910
+        host: 0.0.0.0

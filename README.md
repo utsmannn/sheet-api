@@ -57,7 +57,7 @@ For a more manageable setup, you can use `docker-compose`.
         environment:
           - SHEET_ID=${SHEET_ID}
           - API_SECRET_KEY=${API_SECRET_KEY}
-          - CREDENTIAL_PATH=/app/credentials/service-account-key.json
+          - CREDENTIAL_PATH=/app/credentials/service-account.json
         volumes:
           - ./credentials:/app/credentials:ro
         restart: unless-stopped

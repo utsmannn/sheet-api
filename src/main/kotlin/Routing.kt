@@ -13,8 +13,9 @@ fun Application.configureRouting() {
             sheetRouting()
         }
 
-        singlePageApplication {
-            react("landingpage/dist")
+        // Serve React app from landingpage/dist directory
+        staticFiles("/", File("${System.getProperty("user.dir")}/landingpage/dist")) {
+            default("index.html")
         }
     }
 }

@@ -8,7 +8,7 @@ services:
       - "8910:8910"
     environment:
       - SHEET_ID=${SHEET_ID}
-      - CREDENTIAL_PATH=/app/credentials/service-account-key.json
+      - CREDENTIAL_PATH=/app/credentials/service-account.json
       - JAVA_OPTS=-Xmx512m -Xms256m
     volumes:
       - ./credentials:/app/credentials:ro
@@ -28,5 +28,5 @@ networks:
 
 # Example usage:
 # 1. Create .env file with SHEET_ID=your_sheet_id
-# 2. Put your service-account-key.json in ./credentials/ folder
+# 2. Put your service-account.json in ./credentials/ folder
 # 3. Run: docker-compose up -d
