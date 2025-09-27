@@ -13,8 +13,8 @@ fun Application.configureRouting() {
             sheetRouting()
         }
 
-        // Serve React app from landingpage/dist directory
-        staticFiles("/", File("${System.getProperty("user.dir")}/landingpage/dist")) {
+        // Serve React app from resources/static directory
+        staticResources("/", "static") {
             default("index.html")
         }
     }
