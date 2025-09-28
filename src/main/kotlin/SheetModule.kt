@@ -728,7 +728,8 @@ class SheetModule(
      */
     suspend fun getAllSheetsData(
         perPage: Int = 10,
-        offset: Int = 1
+        offset: Int = 1,
+        fields: List<String>
     ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
 
         // Get all sheet names in single call
@@ -746,14 +747,39 @@ class SheetModule(
 
         val spreadSheetValues = sheets.spreadsheets().values()
 
-        // Batch fetch all data for paginated sheets
+
         val sheetsData = paginatedSheetNames.map { sheetName ->
-            getAutoFormattedData(
-                sheetName = sheetName,
-                perPage = perPage,
-                offset = offset,
-                spreadSheetValues = spreadSheetValues
-            )
+            val allHeaders = getHeader(sheetName, spreadSheetValues)
+                .filter { fields.contains(it.key) }
+
+            val filteredHeader = if (fields.isNotEmpty()) {
+                allHeaders
+                    .filter { fields.contains(it.key) }
+            } else {
+                val defaultCoordinate = "A"
+                val defaultValue = getValueByCoordinate(sheetName, "A1", spreadSheetValues)
+                mapOf(
+                    defaultValue to defaultCoordinate
+                )
+            }
+
+            val data = filteredHeader.map { (field, letterCoordinate) ->
+                val coordinate = letterCoordinate + "2"
+                val value = getValueByCoordinate(sheetName, coordinate, spreadSheetValues)
+                Pair(field, value)
+            }.filter { it.first != null }
+
+            buildJsonObject {
+                put("sheet", sheetName)
+                put("data", buildJsonObject {
+                    data.forEach { (field, value) ->
+                        if (field != null) {
+                            put(field, value)
+                        }
+                    }
+                })
+
+            }
         }
 
         val resultArray = buildJsonArray {
@@ -954,5 +980,43 @@ class SheetModule(
             num = num / 26 - 1
         }
         return sb.reverse().toString()
+    }
+
+    /**
+     * Get header row of the specified sheet as a map of header name to coordinate.
+     * @param sheetName sheet name (tab)
+     * @param spreadSheetValues sheets values
+     * @return Map of header name to its coordinate (e.g., "Name" to "A")
+     */
+    suspend fun getHeader(
+        sheetName: String,
+        spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
+    ): Map<String, String> = withContext(Dispatchers.IO) {
+        val headerRow = spreadSheetValues
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull() ?: emptyList()
+
+        headerRow.mapIndexed { index, header ->
+            header.toString() to toColumnLetter(index)
+        }.toMap()
+    }
+
+    /**
+     * Get value from a single cell by coordinate
+     * @param sheetName sheet name (tab)
+     * @param coordinate in A1 notation
+     * @param spreadSheetValues sheets values
+     * @return String value or null
+     */
+    suspend fun getValueByCoordinate(
+        sheetName: String,
+        coordinate: String,
+        spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
+    ): String? = withContext(Dispatchers.IO) {
+        spreadSheetValues
+            .get(spreadsheetId, "$sheetName!$coordinate")
+            .execute()
+            .getValues()?.firstOrNull()?.firstOrNull()?.toString()
     }
 }

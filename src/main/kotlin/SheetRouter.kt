@@ -18,9 +18,10 @@ fun Route.sheetRouting(sheets: Sheets) {
         }
         val perPage = call.request.queryParameters["per_page"]?.toIntOrNull() ?: 10
         val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
+        val fields = call.request.queryParameters["fields"]?.split(",").orEmpty()
 
         val sheetModule = SheetModule(sheetId, sheets)
-        val (sheetsData, totalSheets) = sheetModule.getAllSheetsData(perPage, offset)
+        val (sheetsData, totalSheets) = sheetModule.getAllSheetsData(perPage, offset, fields)
 
         call.response.header("X-Total-Count", totalSheets.toString())
         call.respond(sheetsData)
