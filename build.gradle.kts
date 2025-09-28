@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.utsman"
-version = "0.0.2"
+version = "0.0.3"
 
 application {
     mainClass = "io.ktor.server.netty.EngineMain"

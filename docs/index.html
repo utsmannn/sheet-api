@@ -690,67 +690,25 @@
     // Script section to load models into a JS Var
     var defs = {}
             defs["ErrorResponse"] = {
-  "required" : [ "error" ],
   "type" : "object",
   "properties" : {
     "error" : {
-      "type" : "string",
-      "description" : "Error type or message"
+      "type" : "string"
     },
     "details" : {
-      "description" : "Error details or validation messages",
-      "oneOf" : [ {
-        "type" : "string"
-      }, {
-        "type" : "array",
-        "items" : {
-          "type" : "string"
-        }
-      } ]
+      "type" : "string"
     }
   }
-};
-            defs["OneOfErrorResponseDetails"] = {};
-            defs["SchemaResponse"] = {
-  "required" : [ "fields", "sheetName" ],
-  "type" : "object",
-  "properties" : {
-    "sheetName" : {
-      "type" : "string",
-      "description" : "Name of the sheet"
-    },
-    "fields" : {
-      "type" : "object",
-      "additionalProperties" : {
-        "required" : [ "required", "type" ],
-        "type" : "object",
-        "properties" : {
-          "type" : {
-            "type" : "string",
-            "description" : "Auto-detected field data type",
-            "enum" : [ "string", "integer", "double", "boolean" ]
-          },
-          "required" : {
-            "type" : "boolean",
-            "description" : "Whether field is required"
-          }
-        }
-      }
-    }
-  }
-};
-            defs["SheetRowData"] = {
-  "type" : "object",
-  "additionalProperties" : true,
-  "description" : "Dynamic object representing a row in the sheet"
 };
             defs["SuccessResponse"] = {
-  "required" : [ "ok" ],
   "type" : "object",
   "properties" : {
     "ok" : {
-      "type" : "boolean",
-      "description" : "Operation success status"
+      "type" : "boolean"
+    },
+    "updatedRange" : {
+      "type" : "string",
+      "description" : "The A1 notation of the cells that were updated."
     }
   }
 };
@@ -777,6 +735,9 @@
                     <li data-group="Default" data-name="apiSheetIdSheetIdSheetNameGet" class="">
                       <a href="#api-Default-apiSheetIdSheetIdSheetNameGet">apiSheetIdSheetIdSheetNameGet</a>
                     </li>
+                    <li data-group="Default" data-name="apiSheetIdSheetIdSheetNamePatch" class="">
+                      <a href="#api-Default-apiSheetIdSheetIdSheetNamePatch">apiSheetIdSheetIdSheetNamePatch</a>
+                    </li>
                     <li data-group="Default" data-name="apiSheetIdSheetIdSheetNamePost" class="">
                       <a href="#api-Default-apiSheetIdSheetIdSheetNamePost">apiSheetIdSheetIdSheetNamePost</a>
                     </li>
@@ -785,6 +746,9 @@
                     </li>
                     <li data-group="Default" data-name="apiSheetsSheetNameGet" class="">
                       <a href="#api-Default-apiSheetsSheetNameGet">apiSheetsSheetNameGet</a>
+                    </li>
+                    <li data-group="Default" data-name="apiSheetsSheetNamePatch" class="">
+                      <a href="#api-Default-apiSheetsSheetNamePatch">apiSheetsSheetNamePatch</a>
                     </li>
                     <li data-group="Default" data-name="apiSheetsSheetNamePost" class="">
                       <a href="#api-Default-apiSheetsSheetNamePost">apiSheetsSheetNamePost</a>
@@ -820,12 +784,12 @@
                       <article id="api-Default-apiSheetIdSheetIdGet-0" data-group="User" data-name="apiSheetIdSheetIdGet" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetIdSheetIdGet</h1>
-                          <p>Get sheet names for specific sheet ID</p>
+                          <p>Get sheet names for a specific sheet ID</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Retrieve all sheet names from a specific Google Sheets document</p>
+                        <p class="marked">Retrieve all sheet names (tabs) from a specific Google Sheets document.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/sheetId/{sheetId}</span></code></pre>
@@ -876,7 +840,7 @@ public class DefaultApiExample {
 
 
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
+        String sheetId = sheetId_example; // String | 
         try {
             array['String'] result = apiInstance.apiSheetIdSheetIdGet(sheetId);
             System.out.println(result);
@@ -895,7 +859,7 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
+        String sheetId = sheetId_example; // String | 
         try {
             array['String'] result = apiInstance.apiSheetIdSheetIdGet(sheetId);
             System.out.println(result);
@@ -916,11 +880,11 @@ public class DefaultApiExample {
 [apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
 // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-String *sheetId = sheetId_example; // Google Sheet ID (overrides SHEET_ID environment variable)
+String *sheetId = sheetId_example; // 
 
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Get sheet names for specific sheet ID
+// Get sheet names for a specific sheet ID
 [apiInstance apiSheetIdSheetIdGetWith:sheetId
               completionHandler: ^(array['String'] output, NSError* error) {
                             if (output) {
@@ -945,7 +909,7 @@ ApiKeyAuth.apiKey = "YOUR API KEY"
 
 
 var api = new SheetApi.DefaultApi()
-var sheetId = sheetId_example; // {{String}} Google Sheet ID (overrides SHEET_ID environment variable)
+var sheetId = sheetId_example; // {{String}} 
 
 var callback = function(error, data, response) {
   if (error) {
@@ -981,11 +945,11 @@ namespace Example
             // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
 
             var apiInstance = new DefaultApi();
-            var sheetId = sheetId_example;  // String | Google Sheet ID (overrides SHEET_ID environment variable)
+            var sheetId = sheetId_example;  // String | 
 
             try
             {
-                // Get sheet names for specific sheet ID
+                // Get sheet names for a specific sheet ID
                 array['String'] result = apiInstance.apiSheetIdSheetIdGet(sheetId);
                 Debug.WriteLine(result);
             }
@@ -1009,7 +973,7 @@ Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 
 // Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
 
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
+$sheetId = sheetId_example; // String | 
 
 try {
     $result = $api_instance->apiSheetIdSheetIdGet($sheetId);
@@ -1031,7 +995,7 @@ $WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
 #$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
 
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $sheetId = sheetId_example; # String | Google Sheet ID (overrides SHEET_ID environment variable)
+my $sheetId = sheetId_example; # String | 
 
 eval { 
     my $result = $api_instance->apiSheetIdSheetIdGet(sheetId => $sheetId);
@@ -1056,10 +1020,10 @@ swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
 
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-sheetId = sheetId_example # String | Google Sheet ID (overrides SHEET_ID environment variable)
+sheetId = sheetId_example # String | 
 
 try: 
-    # Get sheet names for specific sheet ID
+    # Get sheet names for a specific sheet ID
     api_response = api_instance.api_sheet_id_sheet_id_get(sheetId)
     pprint(api_response)
 except ApiException as e:
@@ -1086,9 +1050,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Google Sheet ID (overrides SHEET_ID environment variable)
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -1104,7 +1065,7 @@ except ApiException as e:
 
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - List of sheet names </h3>
+                            <h3> Status: 200 - List of sheet names. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -1119,7 +1080,7 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "List of sheet names",
+  "description" : "List of sheet names.",
   "content" : {
     "application/json" : {
       "schema" : {
@@ -1127,11 +1088,6 @@ except ApiException as e:
         "x-content-type" : "application/json",
         "items" : {
           "type" : "string"
-        }
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : [ "Sheet1", "DataSheet", "Summary" ]
         }
       }
     }
@@ -1161,54 +1117,6 @@ except ApiException as e:
                                 </div>
                             </div>
 
-                            <h3> Status: 400 - Bad request - invalid sheetId </h3>
-
-                            <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdGet-400-schema">Schema</a>
-                                </li>
-
-                            </ul>
-
-                            <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdGet-400-schema">
-                                  <div id='responses-apiSheetIdSheetIdGet-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "Bad request - invalid sheetId",
-  "content" : {
-    "application/json" : {
-      "schema" : {
-        "$ref" : "#/components/schemas/ErrorResponse"
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["application/json"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetIdSheetIdGet-400-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetIdSheetIdGet-400-schema-400');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-apiSheetIdSheetIdGet-400-schema-data' type='hidden' value=''></input>
-                                </div>
-                            </div>
-
                         </article>
                       </div>
                       <hr>
@@ -1216,12 +1124,12 @@ except ApiException as e:
                       <article id="api-Default-apiSheetIdSheetIdSheetNameGet-0" data-group="User" data-name="apiSheetIdSheetIdSheetNameGet" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetIdSheetIdSheetNameGet</h1>
-                          <p>Get sheet data with custom sheet ID and auto-grouping</p>
+                          <p>Get sheet data (custom ID)</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Retrieve data from any Google Sheet using custom sheet ID. Automatically detects hierarchical patterns and returns nested JSON for grouped data or flat array for regular data.</p>
+                        <p class="marked">Retrieve data from any Google Sheet. Automatically detects hierarchical patterns, returning nested JSON for grouped data or a flat array for regular data. Merges items from duplicated parent groups.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/sheetId/{sheetId}/{sheetName}</span></code></pre>
@@ -1272,10 +1180,10 @@ public class DefaultApiExample {
 
 
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
-        Integer perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-        Integer offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        Integer perPage = 56; // Integer | 
+        Integer offset = 56; // Integer | 
         try {
             apiInstance.apiSheetIdSheetIdSheetNameGet(sheetId, sheetName, perPage, offset);
         } catch (ApiException e) {
@@ -1293,10 +1201,10 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
-        Integer perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-        Integer offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        Integer perPage = 56; // Integer | 
+        Integer offset = 56; // Integer | 
         try {
             apiInstance.apiSheetIdSheetIdSheetNameGet(sheetId, sheetName, perPage, offset);
         } catch (ApiException e) {
@@ -1316,14 +1224,14 @@ public class DefaultApiExample {
 [apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
 // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-String *sheetId = sheetId_example; // Google Sheet ID (overrides SHEET_ID environment variable)
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
-Integer *perPage = 56; // Number of rows per page (default: 10, only applies to flat data) (optional) (default to 10)
-Integer *offset = 56; // Starting row number (default: 1, only applies to flat data) (optional) (default to 1)
+String *sheetId = sheetId_example; // 
+String *sheetName = sheetName_example; // 
+Integer *perPage = 56; //  (optional) (default to 10)
+Integer *offset = 56; //  (optional) (default to 1)
 
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Get sheet data with custom sheet ID and auto-grouping
+// Get sheet data (custom ID)
 [apiInstance apiSheetIdSheetIdSheetNameGetWith:sheetId
     sheetName:sheetName
     perPage:perPage
@@ -1348,11 +1256,11 @@ ApiKeyAuth.apiKey = "YOUR API KEY"
 
 
 var api = new SheetApi.DefaultApi()
-var sheetId = sheetId_example; // {{String}} Google Sheet ID (overrides SHEET_ID environment variable)
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
+var sheetId = sheetId_example; // {{String}} 
+var sheetName = sheetName_example; // {{String}} 
 var opts = { 
-  'perPage': 56, // {{Integer}} Number of rows per page (default: 10, only applies to flat data)
-  'offset': 56 // {{Integer}} Starting row number (default: 1, only applies to flat data)
+  'perPage': 56, // {{Integer}} 
+  'offset': 56 // {{Integer}} 
 };
 var callback = function(error, data, response) {
   if (error) {
@@ -1388,14 +1296,14 @@ namespace Example
             // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
 
             var apiInstance = new DefaultApi();
-            var sheetId = sheetId_example;  // String | Google Sheet ID (overrides SHEET_ID environment variable)
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
-            var perPage = 56;  // Integer | Number of rows per page (default: 10, only applies to flat data) (optional)  (default to 10)
-            var offset = 56;  // Integer | Starting row number (default: 1, only applies to flat data) (optional)  (default to 1)
+            var sheetId = sheetId_example;  // String | 
+            var sheetName = sheetName_example;  // String | 
+            var perPage = 56;  // Integer |  (optional)  (default to 10)
+            var offset = 56;  // Integer |  (optional)  (default to 1)
 
             try
             {
-                // Get sheet data with custom sheet ID and auto-grouping
+                // Get sheet data (custom ID)
                 apiInstance.apiSheetIdSheetIdSheetNameGet(sheetId, sheetName, perPage, offset);
             }
             catch (Exception e)
@@ -1418,10 +1326,10 @@ Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 
 // Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
 
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
-$perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-$offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+$sheetId = sheetId_example; // String | 
+$sheetName = sheetName_example; // String | 
+$perPage = 56; // Integer | 
+$offset = 56; // Integer | 
 
 try {
     $api_instance->apiSheetIdSheetIdSheetNameGet($sheetId, $sheetName, $perPage, $offset);
@@ -1442,10 +1350,10 @@ $WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
 #$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
 
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $sheetId = sheetId_example; # String | Google Sheet ID (overrides SHEET_ID environment variable)
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
-my $perPage = 56; # Integer | Number of rows per page (default: 10, only applies to flat data)
-my $offset = 56; # Integer | Starting row number (default: 1, only applies to flat data)
+my $sheetId = sheetId_example; # String | 
+my $sheetName = sheetName_example; # String | 
+my $perPage = 56; # Integer | 
+my $offset = 56; # Integer | 
 
 eval { 
     $api_instance->apiSheetIdSheetIdSheetNameGet(sheetId => $sheetId, sheetName => $sheetName, perPage => $perPage, offset => $offset);
@@ -1469,13 +1377,13 @@ swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
 
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-sheetId = sheetId_example # String | Google Sheet ID (overrides SHEET_ID environment variable)
-sheetName = sheetName_example # String | Name of the Google Sheet tab
-perPage = 56 # Integer | Number of rows per page (default: 10, only applies to flat data) (optional) (default to 10)
-offset = 56 # Integer | Starting row number (default: 1, only applies to flat data) (optional) (default to 1)
+sheetId = sheetId_example # String | 
+sheetName = sheetName_example # String | 
+perPage = 56 # Integer |  (optional) (default to 10)
+offset = 56 # Integer |  (optional) (default to 1)
 
 try: 
-    # Get sheet data with custom sheet ID and auto-grouping
+    # Get sheet data (custom ID)
     api_instance.api_sheet_id_sheet_id_sheet_name_get(sheetId, sheetName, perPage=perPage, offset=offset)
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetIdSheetIdSheetNameGet: %s\n" % e)</code></pre>
@@ -1501,9 +1409,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Google Sheet ID (overrides SHEET_ID environment variable)
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -1523,9 +1428,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -1556,9 +1458,6 @@ except ApiException as e:
                                                     Integer
                                                 </span>
                                 
-                                                    <div class="inner description">
-                                                        Number of rows per page (default: 10, only applies to flat data)
-                                                    </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1575,9 +1474,6 @@ except ApiException as e:
                                                     Integer
                                                 </span>
                                 
-                                                    <div class="inner description">
-                                                        Starting row number (default: 1, only applies to flat data)
-                                                    </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1586,7 +1482,7 @@ except ApiException as e:
                             </table>
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successful response with sheet data (flat array or hierarchical object) </h3>
+                            <h3> Status: 200 - Successful response with sheet data. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -1604,10 +1500,10 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Successful response with sheet data (flat array or hierarchical object)",
+  "description" : "Successful response with sheet data.",
   "headers" : {
     "X-Total-Count" : {
-      "description" : "Total number of rows in the sheet (only for flat data)",
+      "description" : "Total number of rows (only for flat data)",
       "style" : "simple",
       "explode" : false,
       "schema" : {
@@ -1620,52 +1516,10 @@ except ApiException as e:
       "schema" : {
         "x-content-type" : "application/json",
         "oneOf" : [ {
-          "type" : "array",
-          "description" : "Flat data with pagination",
-          "items" : {
-            "type" : "object",
-            "additionalProperties" : true
-          }
+          "type" : "array"
         }, {
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Hierarchical grouped data"
+          "type" : "object"
         } ]
-      },
-      "examples" : {
-        "FlatData" : {
-          "summary" : "Regular tabular data",
-          "value" : [ {
-            "student_id" : "S001",
-            "name" : "Alice Johnson",
-            "grade" : "A"
-          }, {
-            "student_id" : "S002",
-            "name" : "Bob Smith",
-            "grade" : "B+"
-          } ]
-        },
-        "HierarchicalData" : {
-          "summary" : "Auto-detected course structure",
-          "value" : {
-            "Courses" : [ {
-              "name" : "Programming Fundamentals",
-              "data" : [ {
-                "Week" : "Week 1 - Introduction",
-                "Lesson" : "Variables and Data Types",
-                "Duration" : "45 min"
-              }, {
-                "Week" : "Week 1 - Introduction",
-                "Lesson" : "Control Structures",
-                "Duration" : "60 min"
-              }, {
-                "Week" : "Week 2 - Functions",
-                "Lesson" : "Function Basics",
-                "Duration" : "50 min"
-              } ]
-            } ]
-          }
-        }
       }
     }
   }
@@ -1710,22 +1564,482 @@ except ApiException as e:
                                 </div>
                             </div>
 
-                            <h3> Status: 400 - Bad request - invalid parameters </h3>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-apiSheetIdSheetIdSheetNamePatch">
+                      <article id="api-Default-apiSheetIdSheetIdSheetNamePatch-0" data-group="User" data-name="apiSheetIdSheetIdSheetNamePatch" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiSheetIdSheetIdSheetNamePatch</h1>
+                          <p>Update existing row (custom ID)</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked">Partially updates a single row in the specified sheet.
+- **Root Update**: If called without query parameters, it updates the first root entity.
+- **Nested Update**: If called with query parameters, it uses them as identifiers to find and update a specific nested row.
+</p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="patch"><code><span class="pln">/api/sheetId/{sheetId}/{sheetName}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetIdSheetIdSheetNamePatch-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X PATCH\
+-H "X-API-Key: [[apiKey]]"\
+ -H "Authorization: Bearer [[accessToken]]"\
+-H "Accept: application/json"\
+-H "Content-Type: application/json"\
+"http://0.0.0.0:8910/api/sheetId/{sheetId}/{sheetName}?...="</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+
+        DefaultApi apiInstance = new DefaultApi();
+        map[String, Object] body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+        try {
+            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePatch(body, sheetId, sheetName, ...);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNamePatch");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+        map[String, Object] body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+        try {
+            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePatch(body, sheetId, sheetName, ...);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNamePatch");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+// Configure API key authorization: (authentication scheme: ApiKeyAuth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
+map[String, Object] *body = ; // A JSON object containing the single field and new value to update.
+String *sheetId = sheetId_example; // 
+String *sheetName = sheetName_example; // 
+String *... = ..._example; // Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional)
+
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+// Update existing row (custom ID)
+[apiInstance apiSheetIdSheetIdSheetNamePatchWith:body
+    sheetId:sheetId
+    sheetName:sheetName
+    ...:...
+              completionHandler: ^(SuccessResponse output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SheetApi = require('sheet_api');
+var defaultClient = SheetApi.ApiClient.instance;
+
+// Configure API key authorization: ApiKeyAuth
+var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+ApiKeyAuth.apiKey = "YOUR API KEY"
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//ApiKeyAuth.apiKeyPrefix['X-API-Key'] = "Token"
+
+
+var api = new SheetApi.DefaultApi()
+var body = ; // {{map[String, Object]}} A JSON object containing the single field and new value to update.
+var sheetId = sheetId_example; // {{String}} 
+var sheetName = sheetName_example; // {{String}} 
+var opts = { 
+  '...': ..._example // {{String}} Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+};
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiSheetIdSheetIdSheetNamePatch(bodysheetIdsheetName, opts, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiSheetIdSheetIdSheetNamePatchExample
+    {
+        public void main()
+        {
+
+            // Configure API key authorization: ApiKeyAuth
+            Configuration.Default.ApiKey.Add("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
+
+            var apiInstance = new DefaultApi();
+            var body = new map[String, Object](); // map[String, Object] | A JSON object containing the single field and new value to update.
+            var sheetId = sheetId_example;  // String | 
+            var sheetName = sheetName_example;  // String | 
+            var ... = ..._example;  // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional) 
+
+            try
+            {
+                // Update existing row (custom ID)
+                SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePatch(body, sheetId, sheetName, ...);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.apiSheetIdSheetIdSheetNamePatch: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: ApiKeyAuth
+Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+$api_instance = new Swagger\Client\ApiDefaultApi();
+$body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+$sheetId = sheetId_example; // String | 
+$sheetName = sheetName_example; // String | 
+$... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+
+try {
+    $result = $api_instance->apiSheetIdSheetIdSheetNamePatch($body, $sheetId, $sheetName, $...);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->apiSheetIdSheetIdSheetNamePatch: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::DefaultApi;
+
+# Configure API key authorization: ApiKeyAuth
+$WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
+
+my $api_instance = WWW::SwaggerClient::DefaultApi->new();
+my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | A JSON object containing the single field and new value to update.
+my $sheetId = sheetId_example; # String | 
+my $sheetName = sheetName_example; # String | 
+my $... = ..._example; # String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+
+eval { 
+    my $result = $api_instance->apiSheetIdSheetIdSheetNamePatch(body => $body, sheetId => $sheetId, sheetName => $sheetName, ... => $...);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->apiSheetIdSheetIdSheetNamePatch: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePatch-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: ApiKeyAuth
+swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# swagger_client.configuration.api_key_prefix['X-API-Key'] = 'Bearer'
+
+# create an instance of the API class
+api_instance = swagger_client.DefaultApi()
+body =  # map[String, Object] | A JSON object containing the single field and new value to update.
+sheetId = sheetId_example # String | 
+sheetName = sheetName_example # String | 
+... = ..._example # String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional)
+
+try: 
+    # Update existing row (custom ID)
+    api_response = api_instance.api_sheet_id_sheet_id_sheet_name_patch(body, sheetId, sheetName, ...=...)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling DefaultApi->apiSheetIdSheetIdSheetNamePatch: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">sheetId*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiSheetIdSheetIdSheetNamePatch_sheetId">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      String
+                                                  </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                                  <tr><td style="width:150px;">sheetName*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiSheetIdSheetIdSheetNamePatch_sheetName">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      String
+                                                  </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">body <span style="color:red;">*</span></td>
+                                <td>
+                                
+                                
+                                <script>
+                                $(document).ready(function() {
+                                  var schemaWrapper = {
+  "description" : "A JSON object containing the single field and new value to update.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "maxProperties" : 1,
+        "minProperties" : 1,
+        "type" : "object",
+        "additionalProperties" : true
+      }
+    }
+  },
+  "required" : true
+};
+                                  var schema = schemaWrapper.content["application/json"].schema;
+                                  if (schema.$ref != null) {
+                                    schema = defsParser.$refs.get(schema.$ref);
+                                  } else {
+                                    schemaWrapper.components = {};
+                                    schemaWrapper.components.schemas = Object.assign({}, defs);
+                                    $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                      console.log(err);
+                                    });
+                                  }
+                                
+                                  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+                                  var result = $('#d2e199_apiSheetIdSheetIdSheetNamePatch_body');
+                                  result.empty();
+                                  result.append(view.render());
+                                });
+                                </script>
+                                <div id="d2e199_apiSheetIdSheetIdSheetNamePatch_body"></div>
+                                </td>
+                                </tr>
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Query parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">...</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiSheetIdSheetIdSheetNamePatch_...">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    String
+                                                </span>
+                                
+                                                    <div class="inner description">
+                                                        Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., &#x60;?curriculums&#x3D;Group&amp;content_name&#x3D;Item&#x60;).
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                            </table>
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Successfully updated the row. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNameGet-400-schema">Schema</a>
+                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNamePatch-200-schema">Schema</a>
                                 </li>
 
                             </ul>
 
                             <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNameGet-400-schema">
-                                  <div id='responses-apiSheetIdSheetIdSheetNameGet-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNamePatch-200-schema">
+                                  <div id='responses-apiSheetIdSheetIdSheetNamePatch-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Bad request - invalid parameters",
+  "description" : "Successfully updated the row.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/SuccessResponse"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiSheetIdSheetIdSheetNamePatch-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetIdSheetIdSheetNamePatch-200-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiSheetIdSheetIdSheetNamePatch-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 400 - Bad request. </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNamePatch-400-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNamePatch-400-schema">
+                                  <div id='responses-apiSheetIdSheetIdSheetNamePatch-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Bad request.",
   "content" : {
     "application/json" : {
       "schema" : {
@@ -1747,14 +2061,62 @@ except ApiException as e:
 
                                         //console.log(JSON.stringify(schema));
                                         var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetIdSheetIdSheetNameGet-400-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetIdSheetIdSheetNameGet-400-schema-400');
+                                        $('#responses-apiSheetIdSheetIdSheetNamePatch-400-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetIdSheetIdSheetNamePatch-400-schema-400');
                                         result.empty();
                                         result.append(view.render());
                                       });
                                     </script>
                                   </div>
-                                  <input id='responses-apiSheetIdSheetIdSheetNameGet-400-schema-data' type='hidden' value=''></input>
+                                  <input id='responses-apiSheetIdSheetIdSheetNamePatch-400-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 404 - Not Found - Field or target row not found. </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNamePatch-404-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNamePatch-404-schema">
+                                  <div id='responses-apiSheetIdSheetIdSheetNamePatch-404-schema-404' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Not Found - Field or target row not found.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiSheetIdSheetIdSheetNamePatch-404-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetIdSheetIdSheetNamePatch-404-schema-404');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiSheetIdSheetIdSheetNamePatch-404-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 
@@ -1765,12 +2127,15 @@ except ApiException as e:
                       <article id="api-Default-apiSheetIdSheetIdSheetNamePost-0" data-group="User" data-name="apiSheetIdSheetIdSheetNamePost" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetIdSheetIdSheetNamePost</h1>
-                          <p>Add new row to custom sheet</p>
+                          <p>Add new row (custom ID)</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Append a new row to any Google Sheet using custom sheet ID with automatic schema validation</p>
+                        <p class="marked">Appends a new row to the specified sheet.
+- **Root Append**: If called without query parameters, it appends a new root-level entity.
+- **Nested Append**: If called with query parameters, it uses them to provide context (e.g., parent group) for the new nested item.
+</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/sheetId/{sheetId}/{sheetName}</span></code></pre>
@@ -1798,7 +2163,7 @@ except ApiException as e:
  -H "Authorization: Bearer [[accessToken]]"\
 -H "Accept: application/json"\
 -H "Content-Type: application/json"\
-"http://0.0.0.0:8910/api/sheetId/{sheetId}/{sheetName}"</code></pre>
+"http://0.0.0.0:8910/api/sheetId/{sheetId}/{sheetName}?...="</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNamePost-0-java">
                             <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
@@ -1822,17 +2187,12 @@ public class DefaultApiExample {
 
 
         DefaultApi apiInstance = new DefaultApi();
-        map[String, Object] body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-}; // map[String, Object] | JSON data to append as a new row
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
+        map[String, Object] body = ; // map[String, Object] | 
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
         try {
-            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName);
+            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName, ...);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNamePost");
@@ -1849,17 +2209,12 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        map[String, Object] body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-}; // map[String, Object] | JSON data to append as a new row
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
+        map[String, Object] body = ; // map[String, Object] | 
+        String sheetId = sheetId_example; // String | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
         try {
-            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName);
+            SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName, ...);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNamePost");
@@ -1878,22 +2233,18 @@ public class DefaultApiExample {
 [apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
 // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-map[String, Object] *body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-}; // JSON data to append as a new row
-String *sheetId = sheetId_example; // Google Sheet ID (overrides SHEET_ID environment variable)
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
+map[String, Object] *body = ; // 
+String *sheetId = sheetId_example; // 
+String *sheetName = sheetName_example; // 
+String *... = ..._example; // Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional)
 
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Add new row to custom sheet
+// Add new row (custom ID)
 [apiInstance apiSheetIdSheetIdSheetNamePostWith:body
     sheetId:sheetId
     sheetName:sheetName
+    ...:...
               completionHandler: ^(SuccessResponse output, NSError* error) {
                             if (output) {
                                 NSLog(@"%@", output);
@@ -1917,16 +2268,12 @@ ApiKeyAuth.apiKey = "YOUR API KEY"
 
 
 var api = new SheetApi.DefaultApi()
-var body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-}; // {{map[String, Object]}} JSON data to append as a new row
-var sheetId = sheetId_example; // {{String}} Google Sheet ID (overrides SHEET_ID environment variable)
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
-
+var body = ; // {{map[String, Object]}} 
+var sheetId = sheetId_example; // {{String}} 
+var sheetName = sheetName_example; // {{String}} 
+var opts = { 
+  '...': ..._example // {{String}} Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -1934,7 +2281,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.apiSheetIdSheetIdSheetNamePost(bodysheetIdsheetName, callback);
+api.apiSheetIdSheetIdSheetNamePost(bodysheetIdsheetName, opts, callback);
 </code></pre>
                             </div>
 
@@ -1961,14 +2308,15 @@ namespace Example
             // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
 
             var apiInstance = new DefaultApi();
-            var body = new map[String, Object](); // map[String, Object] | JSON data to append as a new row
-            var sheetId = sheetId_example;  // String | Google Sheet ID (overrides SHEET_ID environment variable)
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
+            var body = new map[String, Object](); // map[String, Object] | 
+            var sheetId = sheetId_example;  // String | 
+            var sheetName = sheetName_example;  // String | 
+            var ... = ..._example;  // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional) 
 
             try
             {
-                // Add new row to custom sheet
-                SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName);
+                // Add new row (custom ID)
+                SuccessResponse result = apiInstance.apiSheetIdSheetIdSheetNamePost(body, sheetId, sheetName, ...);
                 Debug.WriteLine(result);
             }
             catch (Exception e)
@@ -1991,18 +2339,13 @@ Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 
 // Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
 
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-}; // map[String, Object] | JSON data to append as a new row
-$sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
+$body = ; // map[String, Object] | 
+$sheetId = sheetId_example; // String | 
+$sheetName = sheetName_example; // String | 
+$... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
 
 try {
-    $result = $api_instance->apiSheetIdSheetIdSheetNamePost($body, $sheetId, $sheetName);
+    $result = $api_instance->apiSheetIdSheetIdSheetNamePost($body, $sheetId, $sheetName, $...);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->apiSheetIdSheetIdSheetNamePost: ', $e->getMessage(), PHP_EOL;
@@ -2021,12 +2364,13 @@ $WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
 #$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
 
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | JSON data to append as a new row
-my $sheetId = sheetId_example; # String | Google Sheet ID (overrides SHEET_ID environment variable)
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
+my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | 
+my $sheetId = sheetId_example; # String | 
+my $sheetName = sheetName_example; # String | 
+my $... = ..._example; # String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
 
 eval { 
-    my $result = $api_instance->apiSheetIdSheetIdSheetNamePost(body => $body, sheetId => $sheetId, sheetName => $sheetName);
+    my $result = $api_instance->apiSheetIdSheetIdSheetNamePost(body => $body, sheetId => $sheetId, sheetName => $sheetName, ... => $...);
     print Dumper($result);
 };
 if ($@) {
@@ -2048,19 +2392,14 @@ swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
 
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-body = {
-  "value" : {
-    "student_id" : "S003",
-    "name" : "Charlie Brown",
-    "grade" : "A-"
-  }
-} # map[String, Object] | JSON data to append as a new row
-sheetId = sheetId_example # String | Google Sheet ID (overrides SHEET_ID environment variable)
-sheetName = sheetName_example # String | Name of the Google Sheet tab
+body =  # map[String, Object] | 
+sheetId = sheetId_example # String | 
+sheetName = sheetName_example # String | 
+... = ..._example # String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional)
 
 try: 
-    # Add new row to custom sheet
-    api_response = api_instance.api_sheet_id_sheet_id_sheet_name_post(body, sheetId, sheetName)
+    # Add new row (custom ID)
+    api_response = api_instance.api_sheet_id_sheet_id_sheet_name_post(body, sheetId, sheetName, ...=...)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetIdSheetIdSheetNamePost: %s\n" % e)</code></pre>
@@ -2086,9 +2425,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Google Sheet ID (overrides SHEET_ID environment variable)
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -2108,9 +2444,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -2135,21 +2468,11 @@ except ApiException as e:
                                 <script>
                                 $(document).ready(function() {
                                   var schemaWrapper = {
-  "description" : "JSON data to append as a new row",
   "content" : {
     "application/json" : {
       "schema" : {
         "type" : "object",
         "additionalProperties" : true
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : {
-            "student_id" : "S003",
-            "name" : "Charlie Brown",
-            "grade" : "A-"
-          }
-        }
       }
     }
   },
@@ -2178,9 +2501,35 @@ except ApiException as e:
                             </table>
 
 
+                            <div class="methodsubtabletitle">Query parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">...</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiSheetIdSheetIdSheetNamePost_...">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    String
+                                                </span>
+                                
+                                                    <div class="inner description">
+                                                        Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., &#x60;?curriculums&#x3D;Group%20Name&#x60;).
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                            </table>
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successfully added new row </h3>
+                            <h3> Status: 200 - Successfully added the row. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -2195,7 +2544,7 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Successfully added new row",
+  "description" : "Successfully added the row.",
   "content" : {
     "application/json" : {
       "schema" : {
@@ -2228,7 +2577,7 @@ except ApiException as e:
                                 </div>
                             </div>
 
-                            <h3> Status: 400 - Bad request - validation failed, invalid JSON, or missing parameters </h3>
+                            <h3> Status: 400 - Bad request. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -2243,7 +2592,7 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Bad request - validation failed, invalid JSON, or missing parameters",
+  "description" : "Bad request.",
   "content" : {
     "application/json" : {
       "schema" : {
@@ -2288,7 +2637,7 @@ except ApiException as e:
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Get schema information from sheet headers (A1-Z1) for validation using custom sheet ID</p>
+                        <p class="marked">Get schema information from sheet headers (A1-Z1) for validation using a custom sheet ID.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/sheetId/{sheetId}/{sheetName}/schema</span></code></pre>
@@ -2312,9 +2661,6 @@ except ApiException as e:
                         <div class="tab-content">
                           <div class="tab-pane active" id="examples-Default-apiSheetIdSheetIdSheetNameSchemaGet-0-curl">
                            <pre class="prettyprint"><code class="language-bsh">curl -X GET\
--H "X-API-Key: [[apiKey]]"\
- -H "Authorization: Bearer [[accessToken]]"\
--H "Accept: application/json"\
 "http://0.0.0.0:8910/api/sheetId/{sheetId}/{sheetName}/schema"</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNameSchemaGet-0-java">
@@ -2329,21 +2675,10 @@ import java.util.*;
 public class DefaultApiExample {
 
     public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-        // Configure API key authorization: ApiKeyAuth
-        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
-        ApiKeyAuth.setApiKey("YOUR API KEY");
-        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
-        //ApiKeyAuth.setApiKeyPrefix("Token");
-
-
+        
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
         try {
-            SchemaResponse result = apiInstance.apiSheetIdSheetIdSheetNameSchemaGet(sheetId, sheetName);
-            System.out.println(result);
+            apiInstance.apiSheetIdSheetIdSheetNameSchemaGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNameSchemaGet");
             e.printStackTrace();
@@ -2359,11 +2694,8 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        String sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
         try {
-            SchemaResponse result = apiInstance.apiSheetIdSheetIdSheetNameSchemaGet(sheetId, sheetName);
-            System.out.println(result);
+            apiInstance.apiSheetIdSheetIdSheetNameSchemaGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetIdSheetIdSheetNameSchemaGet");
             e.printStackTrace();
@@ -2376,23 +2708,12 @@ public class DefaultApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNameSchemaGet-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
-// Configure API key authorization: (authentication scheme: ApiKeyAuth)
-[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
-// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-String *sheetId = sheetId_example; // Google Sheet ID (overrides SHEET_ID environment variable)
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
-
+                              <pre class="prettyprint"><code class="language-cpp">
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
 // Get schema for custom sheet
-[apiInstance apiSheetIdSheetIdSheetNameSchemaGetWith:sheetId
-    sheetName:sheetName
-              completionHandler: ^(SchemaResponse output, NSError* error) {
-                            if (output) {
-                                NSLog(@"%@", output);
-                            }
+[apiInstance apiSheetIdSheetIdSheetNameSchemaGetWithCompletionHandler: 
+              ^(NSError* error) {
                             if (error) {
                                 NSLog(@"Error: %@", error);
                             }
@@ -2402,27 +2723,16 @@ DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
                             <div class="tab-pane" id="examples-Default-apiSheetIdSheetIdSheetNameSchemaGet-0-javascript">
                               <pre class="prettyprint"><code class="language-js">var SheetApi = require('sheet_api');
-var defaultClient = SheetApi.ApiClient.instance;
-
-// Configure API key authorization: ApiKeyAuth
-var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
-ApiKeyAuth.apiKey = "YOUR API KEY"
-// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
-//ApiKeyAuth.apiKeyPrefix['X-API-Key'] = "Token"
-
 
 var api = new SheetApi.DefaultApi()
-var sheetId = sheetId_example; // {{String}} Google Sheet ID (overrides SHEET_ID environment variable)
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
-
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
-api.apiSheetIdSheetIdSheetNameSchemaGet(sheetId, sheetName, callback);
+api.apiSheetIdSheetIdSheetNameSchemaGet(callback);
 </code></pre>
                             </div>
 
@@ -2443,20 +2753,12 @@ namespace Example
         public void main()
         {
 
-            // Configure API key authorization: ApiKeyAuth
-            Configuration.Default.ApiKey.Add("X-API-Key", "YOUR_API_KEY");
-            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-            // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
-
             var apiInstance = new DefaultApi();
-            var sheetId = sheetId_example;  // String | Google Sheet ID (overrides SHEET_ID environment variable)
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
 
             try
             {
                 // Get schema for custom sheet
-                SchemaResponse result = apiInstance.apiSheetIdSheetIdSheetNameSchemaGet(sheetId, sheetName);
-                Debug.WriteLine(result);
+                apiInstance.apiSheetIdSheetIdSheetNameSchemaGet();
             }
             catch (Exception e)
             {
@@ -2472,18 +2774,10 @@ namespace Example
                               <pre class="prettyprint"><code class="language-php"><&#63;php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-// Configure API key authorization: ApiKeyAuth
-Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
-// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-// Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
-
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$sheetId = sheetId_example; // String | Google Sheet ID (overrides SHEET_ID environment variable)
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
 
 try {
-    $result = $api_instance->apiSheetIdSheetIdSheetNameSchemaGet($sheetId, $sheetName);
-    print_r($result);
+    $api_instance->apiSheetIdSheetIdSheetNameSchemaGet();
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->apiSheetIdSheetIdSheetNameSchemaGet: ', $e->getMessage(), PHP_EOL;
 }
@@ -2495,18 +2789,10 @@ try {
 use WWW::SwaggerClient::Configuration;
 use WWW::SwaggerClient::DefaultApi;
 
-# Configure API key authorization: ApiKeyAuth
-$WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
-# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-#$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
-
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $sheetId = sheetId_example; # String | Google Sheet ID (overrides SHEET_ID environment variable)
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
 
 eval { 
-    my $result = $api_instance->apiSheetIdSheetIdSheetNameSchemaGet(sheetId => $sheetId, sheetName => $sheetName);
-    print Dumper($result);
+    $api_instance->apiSheetIdSheetIdSheetNameSchemaGet();
 };
 if ($@) {
     warn "Exception when calling DefaultApi->apiSheetIdSheetIdSheetNameSchemaGet: $@\n";
@@ -2520,20 +2806,12 @@ import swagger_client
 from swagger_client.rest import ApiException
 from pprint import pprint
 
-# Configure API key authorization: ApiKeyAuth
-swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
-# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-# swagger_client.configuration.api_key_prefix['X-API-Key'] = 'Bearer'
-
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-sheetId = sheetId_example # String | Google Sheet ID (overrides SHEET_ID environment variable)
-sheetName = sheetName_example # String | Name of the Google Sheet tab
 
 try: 
     # Get schema for custom sheet
-    api_response = api_instance.api_sheet_id_sheet_id_sheet_name_schema_get(sheetId, sheetName)
-    pprint(api_response)
+    api_instance.api_sheet_id_sheet_id_sheet_name_schema_get()
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetIdSheetIdSheetNameSchemaGet: %s\n" % e)</code></pre>
                             </div>
@@ -2541,159 +2819,12 @@ except ApiException as e:
 
                           <h2>Parameters</h2>
 
-                            <div class="methodsubtabletitle">Path parameters</div>
-                            <table id="methodsubtable">
-                                <tr>
-                                  <th width="150px">Name</th>
-                                  <th>Description</th>
-                                </tr>
-                                  <tr><td style="width:150px;">sheetId*</td>
-                                  <td>
-                                  
-                                  
-                                      <div id="d2e199_apiSheetIdSheetIdSheetNameSchemaGet_sheetId">
-                                          <div class="json-schema-view">
-                                              <div class="primitive">
-                                                  <span class="type">
-                                                      String
-                                                  </span>
-                                  
-                                                      <div class="inner description">
-                                                          Google Sheet ID (overrides SHEET_ID environment variable)
-                                                      </div>
-                                              </div>
-                                                  <div class="inner required">
-                                                      Required
-                                                  </div>
-                                          </div>
-                                      </div>
-                                  </td>
-                                  </tr>
-                                  <tr><td style="width:150px;">sheetName*</td>
-                                  <td>
-                                  
-                                  
-                                      <div id="d2e199_apiSheetIdSheetIdSheetNameSchemaGet_sheetName">
-                                          <div class="json-schema-view">
-                                              <div class="primitive">
-                                                  <span class="type">
-                                                      String
-                                                  </span>
-                                  
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
-                                              </div>
-                                                  <div class="inner required">
-                                                      Required
-                                                  </div>
-                                          </div>
-                                      </div>
-                                  </td>
-                                  </tr>
-                            </table>
 
 
 
 
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successfully retrieved sheet schema </h3>
-
-                            <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema">Schema</a>
-                                </li>
-
-                            </ul>
-
-                            <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema">
-                                  <div id='responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "Successfully retrieved sheet schema",
-  "content" : {
-    "application/json" : {
-      "schema" : {
-        "$ref" : "#/components/schemas/SchemaResponse"
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["application/json"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema-200');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-apiSheetIdSheetIdSheetNameSchemaGet-200-schema-data' type='hidden' value=''></input>
-                                </div>
-                            </div>
-
-                            <h3> Status: 400 - Bad request - missing parameters </h3>
-
-                            <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema">Schema</a>
-                                </li>
-
-                            </ul>
-
-                            <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema">
-                                  <div id='responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "Bad request - missing parameters",
-  "content" : {
-    "application/json" : {
-      "schema" : {
-        "$ref" : "#/components/schemas/ErrorResponse"
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["application/json"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema-400');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-apiSheetIdSheetIdSheetNameSchemaGet-400-schema-data' type='hidden' value=''></input>
-                                </div>
-                            </div>
-
                         </article>
                       </div>
                       <hr>
@@ -2701,12 +2832,12 @@ except ApiException as e:
                       <article id="api-Default-apiSheetsSheetNameGet-0" data-group="User" data-name="apiSheetsSheetNameGet" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetsSheetNameGet</h1>
-                          <p>Get sheet data with auto-grouping</p>
+                          <p>Get sheet data (default ID)</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Retrieve data from a Google Sheet using default SHEET_ID. Automatically detects hierarchical patterns and returns nested JSON for grouped data or flat array for regular data with pagination.</p>
+                        <p class="marked">Retrieve data from a Google Sheet using the default SHEET_ID. Automatically detects hierarchical patterns, returning nested JSON for grouped data or a flat array for regular data. Merges items from duplicated parent groups.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/sheets/{sheetName}</span></code></pre>
@@ -2732,7 +2863,7 @@ except ApiException as e:
                            <pre class="prettyprint"><code class="language-bsh">curl -X GET\
 -H "X-API-Key: [[apiKey]]"\
  -H "Authorization: Bearer [[accessToken]]"\
--H "Accept: application/json,text/plain"\
+-H "Accept: application/json"\
 "http://0.0.0.0:8910/api/sheets/{sheetName}?per_page=&offset="</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-apiSheetsSheetNameGet-0-java">
@@ -2757,9 +2888,9 @@ public class DefaultApiExample {
 
 
         DefaultApi apiInstance = new DefaultApi();
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
-        Integer perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-        Integer offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+        String sheetName = sheetName_example; // String | 
+        Integer perPage = 56; // Integer | 
+        Integer offset = 56; // Integer | 
         try {
             apiInstance.apiSheetsSheetNameGet(sheetName, perPage, offset);
         } catch (ApiException e) {
@@ -2777,9 +2908,9 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
-        Integer perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-        Integer offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+        String sheetName = sheetName_example; // String | 
+        Integer perPage = 56; // Integer | 
+        Integer offset = 56; // Integer | 
         try {
             apiInstance.apiSheetsSheetNameGet(sheetName, perPage, offset);
         } catch (ApiException e) {
@@ -2799,13 +2930,13 @@ public class DefaultApiExample {
 [apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
 // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
-Integer *perPage = 56; // Number of rows per page (default: 10, only applies to flat data) (optional) (default to 10)
-Integer *offset = 56; // Starting row number (default: 1, only applies to flat data) (optional) (default to 1)
+String *sheetName = sheetName_example; // 
+Integer *perPage = 56; //  (optional) (default to 10)
+Integer *offset = 56; //  (optional) (default to 1)
 
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Get sheet data with auto-grouping
+// Get sheet data (default ID)
 [apiInstance apiSheetsSheetNameGetWith:sheetName
     perPage:perPage
     offset:offset
@@ -2829,10 +2960,10 @@ ApiKeyAuth.apiKey = "YOUR API KEY"
 
 
 var api = new SheetApi.DefaultApi()
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
+var sheetName = sheetName_example; // {{String}} 
 var opts = { 
-  'perPage': 56, // {{Integer}} Number of rows per page (default: 10, only applies to flat data)
-  'offset': 56 // {{Integer}} Starting row number (default: 1, only applies to flat data)
+  'perPage': 56, // {{Integer}} 
+  'offset': 56 // {{Integer}} 
 };
 var callback = function(error, data, response) {
   if (error) {
@@ -2868,13 +2999,13 @@ namespace Example
             // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
 
             var apiInstance = new DefaultApi();
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
-            var perPage = 56;  // Integer | Number of rows per page (default: 10, only applies to flat data) (optional)  (default to 10)
-            var offset = 56;  // Integer | Starting row number (default: 1, only applies to flat data) (optional)  (default to 1)
+            var sheetName = sheetName_example;  // String | 
+            var perPage = 56;  // Integer |  (optional)  (default to 10)
+            var offset = 56;  // Integer |  (optional)  (default to 1)
 
             try
             {
-                // Get sheet data with auto-grouping
+                // Get sheet data (default ID)
                 apiInstance.apiSheetsSheetNameGet(sheetName, perPage, offset);
             }
             catch (Exception e)
@@ -2897,9 +3028,9 @@ Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 
 // Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
 
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
-$perPage = 56; // Integer | Number of rows per page (default: 10, only applies to flat data)
-$offset = 56; // Integer | Starting row number (default: 1, only applies to flat data)
+$sheetName = sheetName_example; // String | 
+$perPage = 56; // Integer | 
+$offset = 56; // Integer | 
 
 try {
     $api_instance->apiSheetsSheetNameGet($sheetName, $perPage, $offset);
@@ -2920,9 +3051,9 @@ $WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
 #$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
 
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
-my $perPage = 56; # Integer | Number of rows per page (default: 10, only applies to flat data)
-my $offset = 56; # Integer | Starting row number (default: 1, only applies to flat data)
+my $sheetName = sheetName_example; # String | 
+my $perPage = 56; # Integer | 
+my $offset = 56; # Integer | 
 
 eval { 
     $api_instance->apiSheetsSheetNameGet(sheetName => $sheetName, perPage => $perPage, offset => $offset);
@@ -2946,12 +3077,12 @@ swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
 
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-sheetName = sheetName_example # String | Name of the Google Sheet tab
-perPage = 56 # Integer | Number of rows per page (default: 10, only applies to flat data) (optional) (default to 10)
-offset = 56 # Integer | Starting row number (default: 1, only applies to flat data) (optional) (default to 1)
+sheetName = sheetName_example # String | 
+perPage = 56 # Integer |  (optional) (default to 10)
+offset = 56 # Integer |  (optional) (default to 1)
 
 try: 
-    # Get sheet data with auto-grouping
+    # Get sheet data (default ID)
     api_instance.api_sheets_sheet_name_get(sheetName, perPage=perPage, offset=offset)
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetsSheetNameGet: %s\n" % e)</code></pre>
@@ -2977,9 +3108,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -3010,9 +3138,6 @@ except ApiException as e:
                                                     Integer
                                                 </span>
                                 
-                                                    <div class="inner description">
-                                                        Number of rows per page (default: 10, only applies to flat data)
-                                                    </div>
                                             </div>
                                         </div>
                                     </div>
@@ -3029,9 +3154,6 @@ except ApiException as e:
                                                     Integer
                                                 </span>
                                 
-                                                    <div class="inner description">
-                                                        Starting row number (default: 1, only applies to flat data)
-                                                    </div>
                                             </div>
                                         </div>
                                     </div>
@@ -3040,7 +3162,7 @@ except ApiException as e:
                             </table>
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successful response with sheet data (flat array or hierarchical object) </h3>
+                            <h3> Status: 200 - Successful response with sheet data. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -3058,10 +3180,10 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Successful response with sheet data (flat array or hierarchical object)",
+  "description" : "Successful response with sheet data.",
   "headers" : {
     "X-Total-Count" : {
-      "description" : "Total number of rows in the sheet (only for flat data)",
+      "description" : "Total number of rows (only for flat data)",
       "style" : "simple",
       "explode" : false,
       "schema" : {
@@ -3074,58 +3196,10 @@ except ApiException as e:
       "schema" : {
         "x-content-type" : "application/json",
         "oneOf" : [ {
-          "type" : "array",
-          "description" : "Flat data with pagination",
-          "items" : {
-            "type" : "object",
-            "additionalProperties" : true
-          }
+          "type" : "array"
         }, {
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Hierarchical grouped data"
+          "type" : "object"
         } ]
-      },
-      "examples" : {
-        "FlatData" : {
-          "summary" : "Regular tabular data",
-          "value" : [ {
-            "id" : 1,
-            "name" : "John Doe",
-            "email" : "john@example.com"
-          }, {
-            "id" : 2,
-            "name" : "Jane Smith",
-            "email" : "jane@example.com"
-          } ]
-        },
-        "HierarchicalData" : {
-          "summary" : "Auto-detected grouped data",
-          "value" : {
-            "Provinces" : [ {
-              "name" : "DKI Jakarta",
-              "data" : [ {
-                "District" : "Tanah Abang",
-                "Population" : "87450",
-                "Area" : "7.39",
-                "Density" : "11833.6"
-              }, {
-                "District" : "Menteng",
-                "Population" : "65420",
-                "Area" : "5.12",
-                "Density" : "12777.3"
-              } ]
-            }, {
-              "name" : "Jawa Barat",
-              "data" : [ {
-                "District" : "Cicendo",
-                "Population" : "85420",
-                "Area" : "12.5",
-                "Density" : "6833.6"
-              } ]
-            } ]
-          }
-        }
       }
     }
   }
@@ -3170,37 +3244,415 @@ except ApiException as e:
                                 </div>
                             </div>
 
-                            <h3> Status: 400 - Bad request - missing sheetName parameter </h3>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-apiSheetsSheetNamePatch">
+                      <article id="api-Default-apiSheetsSheetNamePatch-0" data-group="User" data-name="apiSheetsSheetNamePatch" data-version="0">
+                        <div class="pull-left">
+                          <h1>apiSheetsSheetNamePatch</h1>
+                          <p>Update existing row (default ID)</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked">Partially updates a single row in the sheet using the default SHEET_ID.
+- **Root Update**: If called without query parameters, it updates the first root entity.
+- **Nested Update**: If called with query parameters, it uses them as identifiers to find and update a specific nested row.
+</p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="patch"><code><span class="pln">/api/sheets/{sheetName}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-apiSheetsSheetNamePatch-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-apiSheetsSheetNamePatch-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-apiSheetsSheetNamePatch-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X PATCH\
+-H "X-API-Key: [[apiKey]]"\
+ -H "Authorization: Bearer [[accessToken]]"\
+-H "Accept: application/json"\
+-H "Content-Type: application/json"\
+"http://0.0.0.0:8910/api/sheets/{sheetName}?...="</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+
+        // Configure API key authorization: ApiKeyAuth
+        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
+        ApiKeyAuth.setApiKey("YOUR API KEY");
+        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+        //ApiKeyAuth.setApiKeyPrefix("Token");
+
+
+        DefaultApi apiInstance = new DefaultApi();
+        map[String, Object] body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+        try {
+            SuccessResponse result = apiInstance.apiSheetsSheetNamePatch(body, sheetName, ...);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#apiSheetsSheetNamePatch");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+        map[String, Object] body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+        try {
+            SuccessResponse result = apiInstance.apiSheetsSheetNamePatch(body, sheetName, ...);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#apiSheetsSheetNamePatch");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
+// Configure API key authorization: (authentication scheme: ApiKeyAuth)
+[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
+map[String, Object] *body = ; // A JSON object containing the single field and new value to update.
+String *sheetName = sheetName_example; // 
+String *... = ..._example; // Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional)
+
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+// Update existing row (default ID)
+[apiInstance apiSheetsSheetNamePatchWith:body
+    sheetName:sheetName
+    ...:...
+              completionHandler: ^(SuccessResponse output, NSError* error) {
+                            if (output) {
+                                NSLog(@"%@", output);
+                            }
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var SheetApi = require('sheet_api');
+var defaultClient = SheetApi.ApiClient.instance;
+
+// Configure API key authorization: ApiKeyAuth
+var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
+ApiKeyAuth.apiKey = "YOUR API KEY"
+// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
+//ApiKeyAuth.apiKeyPrefix['X-API-Key'] = "Token"
+
+
+var api = new SheetApi.DefaultApi()
+var body = ; // {{map[String, Object]}} A JSON object containing the single field and new value to update.
+var sheetName = sheetName_example; // {{String}} 
+var opts = { 
+  '...': ..._example // {{String}} Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+};
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.apiSheetsSheetNamePatch(bodysheetName, opts, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class apiSheetsSheetNamePatchExample
+    {
+        public void main()
+        {
+
+            // Configure API key authorization: ApiKeyAuth
+            Configuration.Default.ApiKey.Add("X-API-Key", "YOUR_API_KEY");
+            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+            // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
+
+            var apiInstance = new DefaultApi();
+            var body = new map[String, Object](); // map[String, Object] | A JSON object containing the single field and new value to update.
+            var sheetName = sheetName_example;  // String | 
+            var ... = ..._example;  // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional) 
+
+            try
+            {
+                // Update existing row (default ID)
+                SuccessResponse result = apiInstance.apiSheetsSheetNamePatch(body, sheetName, ...);
+                Debug.WriteLine(result);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.apiSheetsSheetNamePatch: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Configure API key authorization: ApiKeyAuth
+Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
+// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+// Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
+
+$api_instance = new Swagger\Client\ApiDefaultApi();
+$body = ; // map[String, Object] | A JSON object containing the single field and new value to update.
+$sheetName = sheetName_example; // String | 
+$... = ..._example; // String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+
+try {
+    $result = $api_instance->apiSheetsSheetNamePatch($body, $sheetName, $...);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->apiSheetsSheetNamePatch: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::DefaultApi;
+
+# Configure API key authorization: ApiKeyAuth
+$WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
+# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+#$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
+
+my $api_instance = WWW::SwaggerClient::DefaultApi->new();
+my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | A JSON object containing the single field and new value to update.
+my $sheetName = sheetName_example; # String | 
+my $... = ..._example; # String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`).
+
+eval { 
+    my $result = $api_instance->apiSheetsSheetNamePatch(body => $body, sheetName => $sheetName, ... => $...);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->apiSheetsSheetNamePatch: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePatch-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# Configure API key authorization: ApiKeyAuth
+swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
+# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
+# swagger_client.configuration.api_key_prefix['X-API-Key'] = 'Bearer'
+
+# create an instance of the API class
+api_instance = swagger_client.DefaultApi()
+body =  # map[String, Object] | A JSON object containing the single field and new value to update.
+sheetName = sheetName_example # String | 
+... = ..._example # String | Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., `?curriculums=Group&content_name=Item`). (optional)
+
+try: 
+    # Update existing row (default ID)
+    api_response = api_instance.api_sheets_sheet_name_patch(body, sheetName, ...=...)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling DefaultApi->apiSheetsSheetNamePatch: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">sheetName*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_apiSheetsSheetNamePatch_sheetName">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      String
+                                                  </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">body <span style="color:red;">*</span></td>
+                                <td>
+                                
+                                
+                                <script>
+                                $(document).ready(function() {
+                                  var schemaWrapper = {
+  "description" : "A JSON object containing the single field and new value to update.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "maxProperties" : 1,
+        "minProperties" : 1,
+        "type" : "object",
+        "additionalProperties" : true
+      }
+    }
+  },
+  "required" : true
+};
+                                  var schema = schemaWrapper.content["application/json"].schema;
+                                  if (schema.$ref != null) {
+                                    schema = defsParser.$refs.get(schema.$ref);
+                                  } else {
+                                    schemaWrapper.components = {};
+                                    schemaWrapper.components.schemas = Object.assign({}, defs);
+                                    $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                      console.log(err);
+                                    });
+                                  }
+                                
+                                  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+                                  var result = $('#d2e199_apiSheetsSheetNamePatch_body');
+                                  result.empty();
+                                  result.append(view.render());
+                                });
+                                </script>
+                                <div id="d2e199_apiSheetsSheetNamePatch_body"></div>
+                                </td>
+                                </tr>
+                            </table>
+
+
+                            <div class="methodsubtabletitle">Query parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">...</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiSheetsSheetNamePatch_...">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    String
+                                                </span>
+                                
+                                                    <div class="inner description">
+                                                        Dynamic query parameters to identify the target row. Parameter names must match column headers (e.g., &#x60;?curriculums&#x3D;Group&amp;content_name&#x3D;Item&#x60;).
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                            </table>
+
+                          <h2>Responses</h2>
+                            <h3> Status: 200 - Successfully updated the row. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNameGet-400-schema">Schema</a>
+                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNamePatch-200-schema">Schema</a>
                                 </li>
 
                             </ul>
 
                             <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetsSheetNameGet-400-schema">
-                                  <div id='responses-apiSheetsSheetNameGet-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                <div class="tab-pane active" id="responses-apiSheetsSheetNamePatch-200-schema">
+                                  <div id='responses-apiSheetsSheetNamePatch-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Bad request - missing sheetName parameter",
+  "description" : "Successfully updated the row.",
   "content" : {
-    "text/plain" : {
+    "application/json" : {
       "schema" : {
-        "type" : "string",
-        "x-content-type" : "text/plain"
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : "sheetName required"
-        }
+        "$ref" : "#/components/schemas/SuccessResponse"
       }
     }
   }
 };
-                                        var schema = schemaWrapper.content["text/plain"].schema;
+                                        var schema = schemaWrapper.content["application/json"].schema;
                                         if (schema.$ref != null) {
                                           schema = defsParser.$refs.get(schema.$ref);
                                         } else {
@@ -3213,14 +3665,110 @@ except ApiException as e:
 
                                         //console.log(JSON.stringify(schema));
                                         var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetsSheetNameGet-400-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetsSheetNameGet-400-schema-400');
+                                        $('#responses-apiSheetsSheetNamePatch-200-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetsSheetNamePatch-200-schema-200');
                                         result.empty();
                                         result.append(view.render());
                                       });
                                     </script>
                                   </div>
-                                  <input id='responses-apiSheetsSheetNameGet-400-schema-data' type='hidden' value=''></input>
+                                  <input id='responses-apiSheetsSheetNamePatch-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 400 - Bad request. </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNamePatch-400-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiSheetsSheetNamePatch-400-schema">
+                                  <div id='responses-apiSheetsSheetNamePatch-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Bad request.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiSheetsSheetNamePatch-400-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetsSheetNamePatch-400-schema-400');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiSheetsSheetNamePatch-400-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+
+                            <h3> Status: 404 - Not Found - Field or target row not found. </h3>
+
+                            <ul class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNamePatch-404-schema">Schema</a>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-apiSheetsSheetNamePatch-404-schema">
+                                  <div id='responses-apiSheetsSheetNamePatch-404-schema-404' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = {
+  "description" : "Not Found - Field or target row not found.",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/ErrorResponse"
+      }
+    }
+  }
+};
+                                        var schema = schemaWrapper.content["application/json"].schema;
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                        } else {
+                                          schemaWrapper.components = {};
+                                          schemaWrapper.components.schemas = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        //console.log(JSON.stringify(schema));
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-apiSheetsSheetNamePatch-404-schema-data').val(stringify(schema));
+                                        var result = $('#responses-apiSheetsSheetNamePatch-404-schema-404');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-apiSheetsSheetNamePatch-404-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
 
@@ -3231,12 +3779,15 @@ except ApiException as e:
                       <article id="api-Default-apiSheetsSheetNamePost-0" data-group="User" data-name="apiSheetsSheetNamePost" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetsSheetNamePost</h1>
-                          <p>Add new row to sheet</p>
+                          <p>Add new row (default ID)</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Append a new row to the Google Sheet using default SHEET_ID with automatic schema validation</p>
+                        <p class="marked">Appends a new row to the sheet using the default SHEET_ID.
+- **Root Append**: If called without query parameters, it appends a new root-level entity.
+- **Nested Append**: If called with query parameters, it uses them to provide context (e.g., parent group) for the new nested item.
+</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/api/sheets/{sheetName}</span></code></pre>
@@ -3264,7 +3815,7 @@ except ApiException as e:
  -H "Authorization: Bearer [[accessToken]]"\
 -H "Accept: application/json"\
 -H "Content-Type: application/json"\
-"http://0.0.0.0:8910/api/sheets/{sheetName}"</code></pre>
+"http://0.0.0.0:8910/api/sheets/{sheetName}?...="</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-apiSheetsSheetNamePost-0-java">
                             <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
@@ -3288,16 +3839,11 @@ public class DefaultApiExample {
 
 
         DefaultApi apiInstance = new DefaultApi();
-        map[String, Object] body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-}; // map[String, Object] | JSON data to append as a new row
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
+        map[String, Object] body = ; // map[String, Object] | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
         try {
-            Object result = apiInstance.apiSheetsSheetNamePost(body, sheetName);
+            SuccessResponse result = apiInstance.apiSheetsSheetNamePost(body, sheetName, ...);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetsSheetNamePost");
@@ -3314,16 +3860,11 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        map[String, Object] body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-}; // map[String, Object] | JSON data to append as a new row
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
+        map[String, Object] body = ; // map[String, Object] | 
+        String sheetName = sheetName_example; // String | 
+        String ... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
         try {
-            Object result = apiInstance.apiSheetsSheetNamePost(body, sheetName);
+            SuccessResponse result = apiInstance.apiSheetsSheetNamePost(body, sheetName, ...);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetsSheetNamePost");
@@ -3342,21 +3883,17 @@ public class DefaultApiExample {
 [apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
 // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
 //[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-map[String, Object] *body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-}; // JSON data to append as a new row
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
+map[String, Object] *body = ; // 
+String *sheetName = sheetName_example; // 
+String *... = ..._example; // Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional)
 
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Add new row to sheet
+// Add new row (default ID)
 [apiInstance apiSheetsSheetNamePostWith:body
     sheetName:sheetName
-              completionHandler: ^(Object output, NSError* error) {
+    ...:...
+              completionHandler: ^(SuccessResponse output, NSError* error) {
                             if (output) {
                                 NSLog(@"%@", output);
                             }
@@ -3379,15 +3916,11 @@ ApiKeyAuth.apiKey = "YOUR API KEY"
 
 
 var api = new SheetApi.DefaultApi()
-var body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-}; // {{map[String, Object]}} JSON data to append as a new row
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
-
+var body = ; // {{map[String, Object]}} 
+var sheetName = sheetName_example; // {{String}} 
+var opts = { 
+  '...': ..._example // {{String}} Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
+};
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
@@ -3395,7 +3928,7 @@ var callback = function(error, data, response) {
     console.log('API called successfully. Returned data: ' + data);
   }
 };
-api.apiSheetsSheetNamePost(bodysheetName, callback);
+api.apiSheetsSheetNamePost(bodysheetName, opts, callback);
 </code></pre>
                             </div>
 
@@ -3422,13 +3955,14 @@ namespace Example
             // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
 
             var apiInstance = new DefaultApi();
-            var body = new map[String, Object](); // map[String, Object] | JSON data to append as a new row
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
+            var body = new map[String, Object](); // map[String, Object] | 
+            var sheetName = sheetName_example;  // String | 
+            var ... = ..._example;  // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional) 
 
             try
             {
-                // Add new row to sheet
-                Object result = apiInstance.apiSheetsSheetNamePost(body, sheetName);
+                // Add new row (default ID)
+                SuccessResponse result = apiInstance.apiSheetsSheetNamePost(body, sheetName, ...);
                 Debug.WriteLine(result);
             }
             catch (Exception e)
@@ -3451,17 +3985,12 @@ Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 
 // Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
 
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-}; // map[String, Object] | JSON data to append as a new row
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
+$body = ; // map[String, Object] | 
+$sheetName = sheetName_example; // String | 
+$... = ..._example; // String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
 
 try {
-    $result = $api_instance->apiSheetsSheetNamePost($body, $sheetName);
+    $result = $api_instance->apiSheetsSheetNamePost($body, $sheetName, $...);
     print_r($result);
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->apiSheetsSheetNamePost: ', $e->getMessage(), PHP_EOL;
@@ -3480,11 +4009,12 @@ $WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
 #$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
 
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | JSON data to append as a new row
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
+my $body = WWW::SwaggerClient::Object::map[String, Object]->new(); # map[String, Object] | 
+my $sheetName = sheetName_example; # String | 
+my $... = ..._example; # String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`).
 
 eval { 
-    my $result = $api_instance->apiSheetsSheetNamePost(body => $body, sheetName => $sheetName);
+    my $result = $api_instance->apiSheetsSheetNamePost(body => $body, sheetName => $sheetName, ... => $...);
     print Dumper($result);
 };
 if ($@) {
@@ -3506,18 +4036,13 @@ swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
 
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-body = {
-  "value" : {
-    "name" : "New User",
-    "email" : "newuser@example.com",
-    "age" : 25
-  }
-} # map[String, Object] | JSON data to append as a new row
-sheetName = sheetName_example # String | Name of the Google Sheet tab
+body =  # map[String, Object] | 
+sheetName = sheetName_example # String | 
+... = ..._example # String | Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., `?curriculums=Group%20Name`). (optional)
 
 try: 
-    # Add new row to sheet
-    api_response = api_instance.api_sheets_sheet_name_post(body, sheetName)
+    # Add new row (default ID)
+    api_response = api_instance.api_sheets_sheet_name_post(body, sheetName, ...=...)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetsSheetNamePost: %s\n" % e)</code></pre>
@@ -3543,9 +4068,6 @@ except ApiException as e:
                                                       String
                                                   </span>
                                   
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
                                               </div>
                                                   <div class="inner required">
                                                       Required
@@ -3570,21 +4092,11 @@ except ApiException as e:
                                 <script>
                                 $(document).ready(function() {
                                   var schemaWrapper = {
-  "description" : "JSON data to append as a new row",
   "content" : {
     "application/json" : {
       "schema" : {
         "type" : "object",
         "additionalProperties" : true
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : {
-            "name" : "New User",
-            "email" : "newuser@example.com",
-            "age" : 25
-          }
-        }
       }
     }
   },
@@ -3613,9 +4125,35 @@ except ApiException as e:
                             </table>
 
 
+                            <div class="methodsubtabletitle">Query parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">...</td>
+                                <td>
+                                
+                                
+                                    <div id="d2e199_apiSheetsSheetNamePost_...">
+                                        <div class="json-schema-view">
+                                            <div class="primitive">
+                                                <span class="type">
+                                                    String
+                                                </span>
+                                
+                                                    <div class="inner description">
+                                                        Dynamic query parameters for nested appends. Parameter name must match a column header (e.g., &#x60;?curriculums&#x3D;Group%20Name&#x60;).
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                </tr>
+                            </table>
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successfully added new row </h3>
+                            <h3> Status: 200 - Successfully added the row. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -3630,24 +4168,11 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Successfully added new row",
+  "description" : "Successfully added the row.",
   "content" : {
     "application/json" : {
       "schema" : {
-        "type" : "object",
-        "properties" : {
-          "ok" : {
-            "type" : "boolean"
-          }
-        },
-        "x-content-type" : "application/json"
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : {
-            "ok" : true
-          }
-        }
+        "$ref" : "#/components/schemas/SuccessResponse"
       }
     }
   }
@@ -3676,7 +4201,7 @@ except ApiException as e:
                                 </div>
                             </div>
 
-                            <h3> Status: 400 - Bad request - validation failed, invalid JSON, or missing sheetName </h3>
+                            <h3> Status: 400 - Bad request. </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
                                 <li class="active">
@@ -3691,43 +4216,11 @@ except ApiException as e:
                                     <script>
                                       $(document).ready(function() {
                                         var schemaWrapper = {
-  "description" : "Bad request - validation failed, invalid JSON, or missing sheetName",
+  "description" : "Bad request.",
   "content" : {
     "application/json" : {
       "schema" : {
-        "type" : "object",
-        "properties" : {
-          "error" : {
-            "type" : "string",
-            "description" : "Error type"
-          },
-          "details" : {
-            "description" : "Error details or validation messages",
-            "oneOf" : [ {
-              "type" : "string"
-            }, {
-              "type" : "array",
-              "items" : {
-                "type" : "string"
-              }
-            } ]
-          }
-        },
-        "x-content-type" : "application/json"
-      },
-      "examples" : {
-        "ValidationError" : {
-          "value" : {
-            "error" : "Validation failed",
-            "details" : [ "Missing required field: email", "Unknown field: invalidField" ]
-          }
-        },
-        "JSONError" : {
-          "value" : {
-            "error" : "Invalid JSON format",
-            "details" : "Unexpected character at line 1"
-          }
-        }
+        "$ref" : "#/components/schemas/ErrorResponse"
       }
     }
   }
@@ -3763,12 +4256,12 @@ except ApiException as e:
                       <article id="api-Default-apiSheetsSheetNameSchemaGet-0" data-group="User" data-name="apiSheetsSheetNameSchemaGet" data-version="0">
                         <div class="pull-left">
                           <h1>apiSheetsSheetNameSchemaGet</h1>
-                          <p>Get sheet schema</p>
+                          <p>Get sheet schema (default ID)</p>
                         </div>
                         <div class="pull-right"></div>
                         <div class="clearfix"></div>
                         <p></p>
-                        <p class="marked">Get schema information from sheet headers (A1-Z1) for validation using default SHEET_ID</p>
+                        <p class="marked">Get schema information from sheet headers (A1-Z1) for validation using the default SHEET_ID.</p>
                         <p></p>
                         <br />
                         <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/api/sheets/{sheetName}/schema</span></code></pre>
@@ -3792,9 +4285,6 @@ except ApiException as e:
                         <div class="tab-content">
                           <div class="tab-pane active" id="examples-Default-apiSheetsSheetNameSchemaGet-0-curl">
                            <pre class="prettyprint"><code class="language-bsh">curl -X GET\
--H "X-API-Key: [[apiKey]]"\
- -H "Authorization: Bearer [[accessToken]]"\
--H "Accept: application/json,text/plain"\
 "http://0.0.0.0:8910/api/sheets/{sheetName}/schema"</code></pre>
                           </div>
                           <div class="tab-pane" id="examples-Default-apiSheetsSheetNameSchemaGet-0-java">
@@ -3809,20 +4299,10 @@ import java.util.*;
 public class DefaultApiExample {
 
     public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-        // Configure API key authorization: ApiKeyAuth
-        ApiKeyAuth ApiKeyAuth = (ApiKeyAuth) defaultClient.getAuthentication("ApiKeyAuth");
-        ApiKeyAuth.setApiKey("YOUR API KEY");
-        // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
-        //ApiKeyAuth.setApiKeyPrefix("Token");
-
-
+        
         DefaultApi apiInstance = new DefaultApi();
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
         try {
-            Object result = apiInstance.apiSheetsSheetNameSchemaGet(sheetName);
-            System.out.println(result);
+            apiInstance.apiSheetsSheetNameSchemaGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetsSheetNameSchemaGet");
             e.printStackTrace();
@@ -3838,10 +4318,8 @@ public class DefaultApiExample {
 
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
-        String sheetName = sheetName_example; // String | Name of the Google Sheet tab
         try {
-            Object result = apiInstance.apiSheetsSheetNameSchemaGet(sheetName);
-            System.out.println(result);
+            apiInstance.apiSheetsSheetNameSchemaGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#apiSheetsSheetNameSchemaGet");
             e.printStackTrace();
@@ -3854,21 +4332,12 @@ public class DefaultApiExample {
   <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
   </div> -->
                             <div class="tab-pane" id="examples-Default-apiSheetsSheetNameSchemaGet-0-objc">
-                              <pre class="prettyprint"><code class="language-cpp">Configuration *apiConfig = [Configuration sharedConfig];
-// Configure API key authorization: (authentication scheme: ApiKeyAuth)
-[apiConfig setApiKey:@"YOUR_API_KEY" forApiKeyIdentifier:@"X-API-Key"];
-// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-//[apiConfig setApiKeyPrefix:@"Bearer" forApiKeyIdentifier:@"X-API-Key"];
-String *sheetName = sheetName_example; // Name of the Google Sheet tab
-
+                              <pre class="prettyprint"><code class="language-cpp">
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
-// Get sheet schema
-[apiInstance apiSheetsSheetNameSchemaGetWith:sheetName
-              completionHandler: ^(Object output, NSError* error) {
-                            if (output) {
-                                NSLog(@"%@", output);
-                            }
+// Get sheet schema (default ID)
+[apiInstance apiSheetsSheetNameSchemaGetWithCompletionHandler: 
+              ^(NSError* error) {
                             if (error) {
                                 NSLog(@"Error: %@", error);
                             }
@@ -3878,26 +4347,16 @@ DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
                             <div class="tab-pane" id="examples-Default-apiSheetsSheetNameSchemaGet-0-javascript">
                               <pre class="prettyprint"><code class="language-js">var SheetApi = require('sheet_api');
-var defaultClient = SheetApi.ApiClient.instance;
-
-// Configure API key authorization: ApiKeyAuth
-var ApiKeyAuth = defaultClient.authentications['ApiKeyAuth'];
-ApiKeyAuth.apiKey = "YOUR API KEY"
-// Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
-//ApiKeyAuth.apiKeyPrefix['X-API-Key'] = "Token"
-
 
 var api = new SheetApi.DefaultApi()
-var sheetName = sheetName_example; // {{String}} Name of the Google Sheet tab
-
 var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
-api.apiSheetsSheetNameSchemaGet(sheetName, callback);
+api.apiSheetsSheetNameSchemaGet(callback);
 </code></pre>
                             </div>
 
@@ -3918,19 +4377,12 @@ namespace Example
         public void main()
         {
 
-            // Configure API key authorization: ApiKeyAuth
-            Configuration.Default.ApiKey.Add("X-API-Key", "YOUR_API_KEY");
-            // Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-            // Configuration.Default.ApiKeyPrefix.Add("X-API-Key", "Bearer");
-
             var apiInstance = new DefaultApi();
-            var sheetName = sheetName_example;  // String | Name of the Google Sheet tab
 
             try
             {
-                // Get sheet schema
-                Object result = apiInstance.apiSheetsSheetNameSchemaGet(sheetName);
-                Debug.WriteLine(result);
+                // Get sheet schema (default ID)
+                apiInstance.apiSheetsSheetNameSchemaGet();
             }
             catch (Exception e)
             {
@@ -3946,17 +4398,10 @@ namespace Example
                               <pre class="prettyprint"><code class="language-php"><&#63;php
 require_once(__DIR__ . '/vendor/autoload.php');
 
-// Configure API key authorization: ApiKeyAuth
-Swagger\Client\Configuration::getDefaultConfiguration()->setApiKey('X-API-Key', 'YOUR_API_KEY');
-// Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-// Swagger\Client\Configuration::getDefaultConfiguration()->setApiKeyPrefix('X-API-Key', 'Bearer');
-
 $api_instance = new Swagger\Client\ApiDefaultApi();
-$sheetName = sheetName_example; // String | Name of the Google Sheet tab
 
 try {
-    $result = $api_instance->apiSheetsSheetNameSchemaGet($sheetName);
-    print_r($result);
+    $api_instance->apiSheetsSheetNameSchemaGet();
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->apiSheetsSheetNameSchemaGet: ', $e->getMessage(), PHP_EOL;
 }
@@ -3968,17 +4413,10 @@ try {
 use WWW::SwaggerClient::Configuration;
 use WWW::SwaggerClient::DefaultApi;
 
-# Configure API key authorization: ApiKeyAuth
-$WWW::SwaggerClient::Configuration::api_key->{'X-API-Key'} = 'YOUR_API_KEY';
-# uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-#$WWW::SwaggerClient::Configuration::api_key_prefix->{'X-API-Key'} = "Bearer";
-
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
-my $sheetName = sheetName_example; # String | Name of the Google Sheet tab
 
 eval { 
-    my $result = $api_instance->apiSheetsSheetNameSchemaGet(sheetName => $sheetName);
-    print Dumper($result);
+    $api_instance->apiSheetsSheetNameSchemaGet();
 };
 if ($@) {
     warn "Exception when calling DefaultApi->apiSheetsSheetNameSchemaGet: $@\n";
@@ -3992,19 +4430,12 @@ import swagger_client
 from swagger_client.rest import ApiException
 from pprint import pprint
 
-# Configure API key authorization: ApiKeyAuth
-swagger_client.configuration.api_key['X-API-Key'] = 'YOUR_API_KEY'
-# Uncomment below to setup prefix (e.g. Bearer) for API key, if needed
-# swagger_client.configuration.api_key_prefix['X-API-Key'] = 'Bearer'
-
 # create an instance of the API class
 api_instance = swagger_client.DefaultApi()
-sheetName = sheetName_example # String | Name of the Google Sheet tab
 
 try: 
-    # Get sheet schema
-    api_response = api_instance.api_sheets_sheet_name_schema_get(sheetName)
-    pprint(api_response)
+    # Get sheet schema (default ID)
+    api_instance.api_sheets_sheet_name_schema_get()
 except ApiException as e:
     print("Exception when calling DefaultApi->apiSheetsSheetNameSchemaGet: %s\n" % e)</code></pre>
                             </div>
@@ -4012,187 +4443,12 @@ except ApiException as e:
 
                           <h2>Parameters</h2>
 
-                            <div class="methodsubtabletitle">Path parameters</div>
-                            <table id="methodsubtable">
-                                <tr>
-                                  <th width="150px">Name</th>
-                                  <th>Description</th>
-                                </tr>
-                                  <tr><td style="width:150px;">sheetName*</td>
-                                  <td>
-                                  
-                                  
-                                      <div id="d2e199_apiSheetsSheetNameSchemaGet_sheetName">
-                                          <div class="json-schema-view">
-                                              <div class="primitive">
-                                                  <span class="type">
-                                                      String
-                                                  </span>
-                                  
-                                                      <div class="inner description">
-                                                          Name of the Google Sheet tab
-                                                      </div>
-                                              </div>
-                                                  <div class="inner required">
-                                                      Required
-                                                  </div>
-                                          </div>
-                                      </div>
-                                  </td>
-                                  </tr>
-                            </table>
 
 
 
 
 
                           <h2>Responses</h2>
-                            <h3> Status: 200 - Successfully retrieved sheet schema </h3>
-
-                            <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNameSchemaGet-200-schema">Schema</a>
-                                </li>
-
-                            </ul>
-
-                            <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetsSheetNameSchemaGet-200-schema">
-                                  <div id='responses-apiSheetsSheetNameSchemaGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "Successfully retrieved sheet schema",
-  "content" : {
-    "application/json" : {
-      "schema" : {
-        "type" : "object",
-        "properties" : {
-          "sheetName" : {
-            "type" : "string",
-            "description" : "Name of the sheet"
-          },
-          "fields" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "object",
-              "properties" : {
-                "type" : {
-                  "type" : "string",
-                  "description" : "Field data type (default: string)"
-                },
-                "required" : {
-                  "type" : "boolean",
-                  "description" : "Whether field is required"
-                }
-              }
-            }
-          }
-        },
-        "x-content-type" : "application/json"
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : {
-            "sheetName" : "MySheet",
-            "fields" : {
-              "id" : {
-                "type" : "string",
-                "required" : true
-              },
-              "name" : {
-                "type" : "string",
-                "required" : true
-              },
-              "email" : {
-                "type" : "string",
-                "required" : true
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["application/json"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetsSheetNameSchemaGet-200-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetsSheetNameSchemaGet-200-schema-200');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-apiSheetsSheetNameSchemaGet-200-schema-data' type='hidden' value=''></input>
-                                </div>
-                            </div>
-
-                            <h3> Status: 400 - Bad request - missing sheetName parameter </h3>
-
-                            <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-apiSheetsSheetNameSchemaGet-400-schema">Schema</a>
-                                </li>
-
-                            </ul>
-
-                            <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-apiSheetsSheetNameSchemaGet-400-schema">
-                                  <div id='responses-apiSheetsSheetNameSchemaGet-400-schema-400' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "Bad request - missing sheetName parameter",
-  "content" : {
-    "text/plain" : {
-      "schema" : {
-        "type" : "string",
-        "x-content-type" : "text/plain"
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : "sheetName required"
-        }
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["text/plain"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-apiSheetsSheetNameSchemaGet-400-schema-data').val(stringify(schema));
-                                        var result = $('#responses-apiSheetsSheetNameSchemaGet-400-schema-400');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-apiSheetsSheetNameSchemaGet-400-schema-data' type='hidden' value=''></input>
-                                </div>
-                            </div>
-
                         </article>
                       </div>
                       <hr>
@@ -4247,8 +4503,7 @@ public class DefaultApiExample {
         
         DefaultApi apiInstance = new DefaultApi();
         try {
-            'String' result = apiInstance.rootGet();
-            System.out.println(result);
+            apiInstance.rootGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#rootGet");
             e.printStackTrace();
@@ -4265,8 +4520,7 @@ public class DefaultApiExample {
     public static void main(String[] args) {
         DefaultApi apiInstance = new DefaultApi();
         try {
-            'String' result = apiInstance.rootGet();
-            System.out.println(result);
+            apiInstance.rootGet();
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#rootGet");
             e.printStackTrace();
@@ -4283,10 +4537,7 @@ public class DefaultApiExample {
 DefaultApi *apiInstance = [[DefaultApi alloc] init];
 
 [apiInstance rootGetWithCompletionHandler: 
-              ^('String' output, NSError* error) {
-                            if (output) {
-                                NSLog(@"%@", output);
-                            }
+              ^(NSError* error) {
                             if (error) {
                                 NSLog(@"Error: %@", error);
                             }
@@ -4302,7 +4553,7 @@ var callback = function(error, data, response) {
   if (error) {
     console.error(error);
   } else {
-    console.log('API called successfully. Returned data: ' + data);
+    console.log('API called successfully.');
   }
 };
 api.rootGet(callback);
@@ -4330,8 +4581,7 @@ namespace Example
 
             try
             {
-                'String' result = apiInstance.rootGet();
-                Debug.WriteLine(result);
+                apiInstance.rootGet();
             }
             catch (Exception e)
             {
@@ -4350,8 +4600,7 @@ require_once(__DIR__ . '/vendor/autoload.php');
 $api_instance = new Swagger\Client\ApiDefaultApi();
 
 try {
-    $result = $api_instance->rootGet();
-    print_r($result);
+    $api_instance->rootGet();
 } catch (Exception $e) {
     echo 'Exception when calling DefaultApi->rootGet: ', $e->getMessage(), PHP_EOL;
 }
@@ -4366,8 +4615,7 @@ use WWW::SwaggerClient::DefaultApi;
 my $api_instance = WWW::SwaggerClient::DefaultApi->new();
 
 eval { 
-    my $result = $api_instance->rootGet();
-    print Dumper($result);
+    $api_instance->rootGet();
 };
 if ($@) {
     warn "Exception when calling DefaultApi->rootGet: $@\n";
@@ -4385,8 +4633,7 @@ from pprint import pprint
 api_instance = swagger_client.DefaultApi()
 
 try: 
-    api_response = api_instance.root_get()
-    pprint(api_response)
+    api_instance.root_get()
 except ApiException as e:
     print("Exception when calling DefaultApi->rootGet: %s\n" % e)</code></pre>
                             </div>
@@ -4403,55 +4650,9 @@ except ApiException as e:
                             <h3> Status: 200 - OK - Returns React landing page with interactive API documentation </h3>
 
                             <ul class="nav nav-tabs nav-tabs-examples" >
-                                <li class="active">
-                                  <a data-toggle="tab" href="#responses-rootGet-200-schema">Schema</a>
-                                </li>
-
                             </ul>
 
                             <div class="tab-content" style='margin-bottom: 10px;'>
-                                <div class="tab-pane active" id="responses-rootGet-200-schema">
-                                  <div id='responses-rootGet-200-schema-200' style="padding: 30px; border-left: 1px solid #eee; border-right: 1px solid #eee; border-bottom: 1px solid #eee;">
-                                    <script>
-                                      $(document).ready(function() {
-                                        var schemaWrapper = {
-  "description" : "OK - Returns React landing page with interactive API documentation",
-  "content" : {
-    "text/html" : {
-      "schema" : {
-        "type" : "string",
-        "x-content-type" : "text/html"
-      },
-      "examples" : {
-        "Example#1" : {
-          "value" : "React landing page with API documentation"
-        }
-      }
-    }
-  }
-};
-                                        var schema = schemaWrapper.content["text/html"].schema;
-                                        if (schema.$ref != null) {
-                                          schema = defsParser.$refs.get(schema.$ref);
-                                        } else {
-                                          schemaWrapper.components = {};
-                                          schemaWrapper.components.schemas = Object.assign({}, defs);
-                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
-                                            console.log(err);
-                                          });
-                                        }
-
-                                        //console.log(JSON.stringify(schema));
-                                        var view = new JSONSchemaView(schema, 3);
-                                        $('#responses-rootGet-200-schema-data').val(stringify(schema));
-                                        var result = $('#responses-rootGet-200-schema-200');
-                                        result.empty();
-                                        result.append(view.render());
-                                      });
-                                    </script>
-                                  </div>
-                                  <input id='responses-rootGet-200-schema-data' type='hidden' value=''></input>
-                                </div>
                             </div>
 
                         </article>
