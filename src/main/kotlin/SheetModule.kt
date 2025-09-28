@@ -273,91 +273,115 @@ class SheetModule(
         }
     }
 
-    /**
-     * Build grouped JSON from already fetched data
-     */
-    private fun buildGroupedJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>): JsonObject {
-        // Detect columns (same logic as getGroupedJson)
-        val groupingColumns = mutableSetOf<Int>()
-        val rootColumns = mutableSetOf<Int>()
+    private fun buildGroupedJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>): JsonElement {
+        // Find hierarchy levels based on the index of the first non-empty cell in each row
+        val levelIndices = dataRows
+            .mapNotNull { row -> row.indexOfFirst { it.toString().isNotBlank() }.takeIf { it != -1 } }
+            .distinct()
+            .sorted()
 
-        headerRow.forEachIndexed { colIndex, _ ->
-            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
-            val nonEmptyCount = dataRows.count { row ->
-                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
-                cellValue.isNotBlank()
-            }
-            val totalRows = dataRows.size
-
-            when {
-                firstRowValue.isNotBlank() && nonEmptyCount == 1 -> {
-                    rootColumns.add(colIndex)
-                }
-                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows -> {
-                    groupingColumns.add(colIndex)
-                }
-            }
+        // A true grouped structure needs at least two levels.
+        if (levelIndices.size < 2) {
+            return buildFlatJsonFromData(headerRow, dataRows, dataRows.size, 1) // Return all rows
         }
 
-        return buildJsonObject {
-            // Add root level fields
-            val firstRow = dataRows.firstOrNull() ?: return@buildJsonObject
-            rootColumns.forEach { colIndex ->
-                val fieldName = headerRow.getOrNull(colIndex)?.toString() ?: ""
-                val fieldValue = firstRow.getOrNull(colIndex)?.toString() ?: ""
-                if (fieldName.isNotBlank()) {
-                    put(fieldName, fieldValue)
+        val results = mutableListOf<JsonObject>()
+        var currentL0Object: JsonObject? = null
+        var currentL1Group: JsonObject? = null
+
+        // Define column roles based on discovered levels
+        val l0Index = levelIndices[0]
+        val l1Index = levelIndices[1]
+        val l2Index = if (levelIndices.size > 2) levelIndices[2] else -1
+
+        val l0Columns = l0Index until l1Index
+        val l1ArrayKey = headerRow[l1Index].toString().let { if (it.endsWith("s")) it else "${it}s" }
+        val l2ArrayKey = "data"
+
+        dataRows.forEach { row ->
+            val firstDataIndex = row.indexOfFirst { it.toString().isNotBlank() }.takeIf { it != -1 }
+
+            // 1. Check for a new L0 entity (root)
+            if (firstDataIndex == l0Index) {
+                val newL0Object = buildJsonObject {
+                    l0Columns.forEach { colIndex ->
+                        val key = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                        val value = row.getOrNull(colIndex)?.toString() ?: ""
+                        if (key.isNotBlank() && value.isNotBlank()) {
+                            put(key, value)
+                        }
+                    }
+                    put(l1ArrayKey, JsonArray(emptyList()))
                 }
+                results.add(newL0Object)
+                currentL0Object = newL0Object
+                currentL1Group = null // Reset context for the new L0
             }
 
-            // Process grouping columns
-            if (groupingColumns.isNotEmpty()) {
-                val groupColIndex = groupingColumns.first()
-                val groupFieldName = headerRow.getOrNull(groupColIndex)?.toString() ?: ""
+            // If we don't have a root object to attach to, we can't process children
+            if (currentL0Object == null) return@forEach
 
-                val groups = mutableMapOf<String, MutableList<JsonObject>>()
-                var currentGroupName = ""
-
-                dataRows.forEach { row ->
-                    val groupValue = row.getOrNull(groupColIndex)?.toString() ?: ""
-
-                    if (groupValue.isNotBlank()) {
-                        currentGroupName = groupValue
-                    }
-
-                    if (currentGroupName.isNotBlank()) {
-                        val rowData = buildJsonObject {
-                            headerRow.forEachIndexed { colIndex, colName ->
-                                if (colIndex !in rootColumns && colIndex !in groupingColumns) {
-                                    val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
-                                    if (cellValue.isNotBlank()) {
-                                        put(colName.toString(), cellValue)
-                                    }
-                                }
-                            }
-                        }
-
-                        if (rowData.isNotEmpty()) {
-                            groups.getOrPut(currentGroupName) { mutableListOf() }.add(rowData)
-                        }
+            // 2. Check for a new L1 group (can be on the same row as L0)
+            val l1Value = row.getOrNull(l1Index)?.toString()?.takeIf { it.isNotBlank() }
+            if (l1Value != null) {
+                val newL1Group = buildJsonObject {
+                    put("name", l1Value)
+                    if (l2Index != -1) {
+                        put(l2ArrayKey, JsonArray(emptyList()))
                     }
                 }
 
-                val pluralFieldName = "${groupFieldName}s"
-                put(pluralFieldName, buildJsonArray {
-                    groups.forEach { (groupName, items) ->
-                        add(buildJsonObject {
-                            put("name", groupName)
-                            put("data", buildJsonArray {
-                                items.forEach { add(it) }
-                            })
-                        })
-                    }
+                val l1Groups = currentL0Object.get(l1ArrayKey)!!.jsonArray.toMutableList()
+                l1Groups.add(newL1Group)
+
+                val updatedL0Object = JsonObject(currentL0Object.toMutableMap().apply {
+                    put(l1ArrayKey, JsonArray(l1Groups))
                 })
+
+                results[results.size - 1] = updatedL0Object
+                currentL0Object = updatedL0Object
+                currentL1Group = newL1Group // Set the context to this new group
+            }
+
+            // 3. Check for a new L2 item (can be on the same row as L0 and/or L1)
+            val l2Value = if (l2Index != -1) row.getOrNull(l2Index)?.toString()?.takeIf { it.isNotBlank() } else null
+            if (l2Value != null) {
+                if (currentL1Group == null) return@forEach // Must have an L1 group to attach to
+
+                val newL2Item = buildJsonObject {
+                    (l2Index until headerRow.size).forEach { colIndex ->
+                        val key = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                        val value = row.getOrNull(colIndex)?.toString() ?: ""
+                        if (key.isNotBlank() && value.isNotBlank()) {
+                            put(key, value)
+                        }
+                    }
+                }
+
+                val l2Items = currentL1Group.get(l2ArrayKey)!!.jsonArray.toMutableList()
+                l2Items.add(newL2Item)
+
+                val updatedL1Group = JsonObject(currentL1Group.toMutableMap().apply {
+                    put(l2ArrayKey, JsonArray(l2Items))
+                })
+
+                val l1Groups = currentL0Object.get(l1ArrayKey)!!.jsonArray.toMutableList()
+                if (l1Groups.isNotEmpty()) {
+                    l1Groups[l1Groups.size - 1] = updatedL1Group
+                }
+
+                val updatedL0Object = JsonObject(currentL0Object.toMutableMap().apply {
+                    put(l1ArrayKey, JsonArray(l1Groups))
+                })
+
+                results[results.size - 1] = updatedL0Object
+                currentL0Object = updatedL0Object
+                currentL1Group = updatedL1Group // Update context
             }
         }
-    }
 
+        return if (results.size == 1) results.first() else JsonArray(results)
+    }
     /**
      * Build flat JSON array from already fetched data with pagination
      */
