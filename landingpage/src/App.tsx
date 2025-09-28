@@ -1,3 +1,4 @@
+import Header from './components/Header'
 import Hero from './components/Hero'
 import ApiKeyGenerator from './components/ApiKeyGenerator'
 import ApiDemo from './components/ApiDemo'
@@ -6,11 +7,16 @@ import Footer from './components/Footer'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gray-50 font-ubuntu">
+      <Header />
       <Hero />
-      <ApiDemo />
+      <div id="demo">
+        <ApiDemo />
+      </div>
       <ApiKeyGenerator />
-      <CodeExamples />
+      <div id="examples">
+        <CodeExamples />
+      </div>
       <Footer />
     </div>
   )

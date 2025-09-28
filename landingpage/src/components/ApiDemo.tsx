@@ -109,10 +109,10 @@ export default function ApiDemo() {
     <div className="w-full py-16 px-4 sm:px-6 lg:px-8">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full">
         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-          API Demo
+          Live API Demo
         </h2>
         <p className="text-gray-600 text-center mb-8">
-          Test the API endpoints directly from your browser.
+          Test the API endpoints directly from your browser. Watch how the API automatically detects hierarchical patterns in the Google Sheet and returns nested JSON.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -196,9 +196,9 @@ export default function ApiDemo() {
                   <select
                     value={endpoint}
                     onChange={(e) => setEndpoint(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                   >
-                    <option value="GET /api/sheets/{sheetName}">GET /api/sheets/{sheetName} - Get sheet data</option>
+                    <option value="GET /api/sheets/{sheetName}">GET /api/sheets/{sheetName} - Auto-grouped data</option>
                     <option value="GET /api/sheets/{sheetName}/schema">GET /api/sheets/{sheetName}/schema - Get schema</option>
                   </select>
                 </div>
@@ -206,7 +206,7 @@ export default function ApiDemo() {
                 <button
                   onClick={testEndpoint}
                   disabled={loading}
-                  className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+                  className="w-full bg-gray-900 text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
                 >
                   {loading ? 'Testing...' : 'Test Endpoint'}
                 </button>
@@ -219,16 +219,21 @@ export default function ApiDemo() {
                 <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-[600px] overflow-auto font-mono text-sm">
                   {response ? (
                     <div>
-                      <div className={`mb-2 ${response.status >= 200 && response.status < 300 ? 'text-green-400' : 'text-red-400'}`}>
+                      <div className={`mb-2 flex items-center gap-2 ${response.status >= 200 && response.status < 300 ? 'text-green-400' : 'text-red-400'}`}>
                         Status: {response.status}
+                        {response.status >= 200 && response.status < 300 && (
+                          <span className="text-xs bg-gray-600 text-white px-2 py-1 rounded">Success</span>
+                        )}
                       </div>
                       <pre className="whitespace-pre-wrap text-gray-300">
                         {JSON.stringify(response.data, null, 2)}
                       </pre>
                     </div>
                   ) : (
-                    <div className="text-gray-500">
-                      Click "Test Endpoint" to see the response here.
+                    <div className="text-gray-500 text-center pt-8">
+                      Click "Test Endpoint" to see the live API response here.
+                      <br /><br />
+                      Watch how the API automatically detects if your data has hierarchical structure.
                     </div>
                   )}
                 </div>

@@ -7,7 +7,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Sheet API</h3>
             <p className="text-gray-400 text-sm">
               A powerful Kotlin REST API for managing Google Sheets data with automatic
-              schema detection and secure authentication.
+              hierarchical grouping, schema detection, and secure authentication.
             </p>
           </div>
 
@@ -25,8 +25,13 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://github.com/utsman/sheet-api-kotlin" className="text-gray-400 hover:text-white transition-colors">
+                <a href="https://github.com/utsmannn/sheet-api" className="text-gray-400 hover:text-white transition-colors">
                   GitHub Repository
+                </a>
+              </li>
+              <li>
+                <a href="https://deepwiki.com/utsmannn/sheet-api" className="text-gray-400 hover:text-white transition-colors">
+                  DeepWiki Documentation
                 </a>
               </li>
             </ul>
@@ -35,11 +40,12 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Features</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>• Auto Schema Detection</li>
-              <li>• JSON Validation</li>
+              <li>• Auto Hierarchical Grouping</li>
+              <li>• Dynamic Sheet ID Support</li>
+              <li>• Smart Data Detection</li>
               <li>• Secure API Authentication</li>
-              <li>• Pagination Support</li>
-              <li>• CORS Enabled</li>
+              <li>• Performance Optimized</li>
+              <li>• JSON Schema Validation</li>
             </ul>
           </div>
         </div>
