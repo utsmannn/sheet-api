@@ -8,6 +8,7 @@ services:
       - "8910:8910"
     environment:
       - SHEET_ID=${SHEET_ID}
+      - API_SECRET_KEY=${API_SECRET_KEY}
       - CREDENTIAL_PATH=/app/credentials/service-account.json
       - JAVA_OPTS=-Xmx512m -Xms256m
     volumes:
