@@ -18,6 +18,24 @@ paths:
             text/html: {}
 
   # --- Start of Default Sheet ID endpoints ---
+  /api/sheets:
+    get:
+      summary: "Get all sheet names (default ID)"
+      description: "Retrieve all sheet names (tabs) from the Google Sheet configured with the default SHEET_ID."
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: "Successful response with a list of sheet names."
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "string"
+                example: ["Sheet1", "MySheet", "Data"]
+
   /api/sheets/{sheetName}:
     get:
       summary: "Get sheet data (default ID)"

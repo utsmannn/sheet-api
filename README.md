@@ -67,7 +67,7 @@ For a more manageable setup, you can use `docker-compose`.
     API_SECRET_KEY=your-secret-key
     ```
 
-3.  **Create a `credentials` directory** and place your `service-account-key.json` file inside it.
+3.  **Create a `credentials` directory** and place your `service-account.json` file inside it.
 
 4.  **Run the container:**
     ```bash
@@ -106,8 +106,25 @@ curl -H "X-API-Key: YOUR_API_KEY" \
 
 ---
 
+### 2. Get Sheet Names (`GET`)
+Retrieves the names of all sheets (tabs) in a spreadsheet.
 
-### 2. Add Data (`POST`)
+**Example - Get Sheet Names for Default Sheet ID:**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheets"
+```
+
+**Example - Get Sheet Names for Custom Sheet ID:**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheetId/{sheetId}"
+```
+
+---
+
+
+### 3. Add Data (`POST`)
 Appends a new row to the sheet. This endpoint has two modes:
 
 - **Append Root Item**: If called without query parameters, it adds a new top-level entry.
@@ -136,7 +153,7 @@ curl -X POST \
 ---
 
 
-### 3. Update Data (`PATCH`)
+### 4. Update Data (`PATCH`)
 Partially updates a single field in an existing row. This endpoint also has two modes:
 
 - **Update Root Item**: If called without query parameters, it updates a field in the first top-level entry.
@@ -165,10 +182,16 @@ curl -X PATCH \
 ---
 
 
-### 4. Get Sheet Schema (`GET`)
+### 5. Get Sheet Schema (`GET`)
 Returns the detected schema from sheet headers (A1-Z1) with auto-detected data types.
 
-**Example:**
+**Example - Get Schema for Default Sheet ID:**
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" \
+  "http://localhost:8910/api/sheets/{sheetName}/schema"
+```
+
+**Example - Get Schema for Custom Sheet ID:**
 ```bash
 curl -H "X-API-Key: YOUR_API_KEY" \
   "http://localhost:8910/api/sheetId/{sheetId}/{sheetName}/schema"
@@ -180,7 +203,7 @@ Set the following environment variables:
 
 ```bash
 export SHEET_ID="your_default_google_sheet_id"  # Optional: fallback when no sheetId in path
-export CREDENTIAL_PATH="/path/to/service-account-key.json"
+export CREDENTIAL_PATH="/path/to/service-account.json"
 export API_SECRET_KEY="your-secret-key-for-api-key-generation"
 ```
 

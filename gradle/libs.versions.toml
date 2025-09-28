@@ -5,7 +5,6 @@ logback = "1.5.13"
 googleApiClient = "2.6.0"
 googleOAuth2Library = "1.39.1"
 googleApiSheetService = "v4-rev20220927-2.0.0"
-redis = "6.1.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
@@ -24,7 +23,6 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
 google-api-services-sheets = { module = "com.google.apis:google-api-services-sheets", version.ref = "googleApiSheetService" }
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleOAuth2Library" }
-redis-clients-jedis = { module = "redis.clients:jedis", version.ref = "redis" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
