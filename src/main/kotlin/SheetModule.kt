@@ -1,22 +1,17 @@
 package com.utsman
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.model.AppendValuesResponse
-import com.google.api.services.sheets.v4.model.Sheet
 import com.google.api.services.sheets.v4.model.ValueRange
-import com.google.auth.http.HttpCredentialsAdapter
-import com.google.auth.oauth2.GoogleCredentials
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.*
-import java.io.File
 
 class SheetModule(
     private val spreadsheetId: String,
     private val sheets: Sheets,
 ) {
+
     /**
      * Get paginated data slice from specified sheet
      * @param sheetName sheet name (tab)
@@ -30,24 +25,30 @@ class SheetModule(
         offset: Int = 1
     ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
 
-        val totalRows = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:A")
-            .execute()
-            .getValues()?.size ?: 0
+        val totalRows = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .get(spreadsheetId, "$sheetName!A:A")
+                .execute()
+                .getValues()?.size ?: 0
+        }
 
         val startRow = offset + 1
         val endRow = minOf(startRow + perPage - 1, totalRows.coerceAtLeast(1))
         val dataRange = "$sheetName!A$startRow:Z$endRow"
 
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull() ?: emptyList()
+        val headerRow = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .get(spreadsheetId, "$sheetName!1:1")
+                .execute()
+                .getValues()?.firstOrNull() ?: emptyList()
+        }
 
-        val data = sheets.spreadsheets().values()
-            .get(spreadsheetId, dataRange)
-            .execute()
-            .getValues().orEmpty()
+        val data = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .get(spreadsheetId, dataRange)
+                .execute()
+                .getValues().orEmpty()
+        }
 
         val arr = buildJsonArray {
             data.forEach { row ->
