@@ -14,6 +14,8 @@ jobs:
   build-and-publish:
     name: Build and Publish Release
     runs-on: ubuntu-latest
+    env:
+      VITE_API_SECRET_KEY: ${{ secrets.VITE_API_SECRET_KEY }}
 
     steps:
       - name: Check out repository
