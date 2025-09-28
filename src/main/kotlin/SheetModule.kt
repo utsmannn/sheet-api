@@ -299,10 +299,8 @@ class SheetModule(
         val l2ArrayKey = "data"
 
         dataRows.forEach { row ->
-            val firstDataIndex = row.indexOfFirst { it.toString().isNotBlank() }.takeIf { it != -1 }
-
             // 1. Check for a new L0 entity (root)
-            if (firstDataIndex == l0Index) {
+            if (row.getOrNull(l0Index)?.toString()?.isNotBlank() == true) {
                 val newL0Object = buildJsonObject {
                     l0Columns.forEach { colIndex ->
                         val key = headerRow.getOrNull(colIndex)?.toString() ?: ""
@@ -318,35 +316,42 @@ class SheetModule(
                 currentL1Group = null // Reset context for the new L0
             }
 
-            // If we don't have a root object to attach to, we can't process children
-            if (currentL0Object == null) return@forEach
+            val l0 = currentL0Object ?: return@forEach
 
             // 2. Check for a new L1 group (can be on the same row as L0)
             val l1Value = row.getOrNull(l1Index)?.toString()?.takeIf { it.isNotBlank() }
             if (l1Value != null) {
-                val newL1Group = buildJsonObject {
-                    put("name", l1Value)
-                    if (l2Index != -1) {
-                        put(l2ArrayKey, JsonArray(emptyList()))
+                val l1Groups = l0[l1ArrayKey]?.jsonArray?.toMutableList() ?: mutableListOf()
+                val existingGroup = l1Groups.find { it.jsonObject["name"]?.jsonPrimitive?.content == l1Value }
+
+                if (existingGroup != null) {
+                    // Group already exists, just update the context to point to it
+                    currentL1Group = existingGroup.jsonObject
+                } else {
+                    // Group doesn't exist, create a new one
+                    val newL1Group = buildJsonObject {
+                        put("name", l1Value)
+                        if (l2Index != -1) {
+                            put(l2ArrayKey, JsonArray(emptyList()))
+                        }
                     }
+                    l1Groups.add(newL1Group)
+
+                    val updatedL0Object = JsonObject(l0.toMutableMap().apply {
+                        put(l1ArrayKey, JsonArray(l1Groups))
+                    })
+
+                    results[results.size - 1] = updatedL0Object
+                    currentL0Object = updatedL0Object
+                    currentL1Group = newL1Group // Set the context to this new group
                 }
-
-                val l1Groups = currentL0Object.get(l1ArrayKey)!!.jsonArray.toMutableList()
-                l1Groups.add(newL1Group)
-
-                val updatedL0Object = JsonObject(currentL0Object.toMutableMap().apply {
-                    put(l1ArrayKey, JsonArray(l1Groups))
-                })
-
-                results[results.size - 1] = updatedL0Object
-                currentL0Object = updatedL0Object
-                currentL1Group = newL1Group // Set the context to this new group
             }
 
             // 3. Check for a new L2 item (can be on the same row as L0 and/or L1)
             val l2Value = if (l2Index != -1) row.getOrNull(l2Index)?.toString()?.takeIf { it.isNotBlank() } else null
             if (l2Value != null) {
-                if (currentL1Group == null) return@forEach // Must have an L1 group to attach to
+                val l1 = currentL1Group ?: return@forEach
+                val l0ForUpdate = currentL0Object ?: return@forEach
 
                 val newL2Item = buildJsonObject {
                     (l2Index until headerRow.size).forEach { colIndex ->
@@ -358,19 +363,23 @@ class SheetModule(
                     }
                 }
 
-                val l2Items = currentL1Group.get(l2ArrayKey)!!.jsonArray.toMutableList()
+                val l2Items = l1[l2ArrayKey]?.jsonArray?.toMutableList() ?: mutableListOf()
                 l2Items.add(newL2Item)
 
-                val updatedL1Group = JsonObject(currentL1Group.toMutableMap().apply {
+                val updatedL1Group = JsonObject(l1.toMutableMap().apply {
                     put(l2ArrayKey, JsonArray(l2Items))
                 })
 
-                val l1Groups = currentL0Object.get(l1ArrayKey)!!.jsonArray.toMutableList()
-                if (l1Groups.isNotEmpty()) {
-                    l1Groups[l1Groups.size - 1] = updatedL1Group
+                val l1Groups = l0ForUpdate[l1ArrayKey]?.jsonArray?.toMutableList() ?: mutableListOf()
+                val groupIndexToUpdate = l1Groups.indexOfFirst {
+                    it.jsonObject["name"]?.jsonPrimitive?.content == l1["name"]?.jsonPrimitive?.content
                 }
 
-                val updatedL0Object = JsonObject(currentL0Object.toMutableMap().apply {
+                if (groupIndexToUpdate != -1) {
+                    l1Groups[groupIndexToUpdate] = updatedL1Group
+                }
+
+                val updatedL0Object = JsonObject(l0ForUpdate.toMutableMap().apply {
                     put(l1ArrayKey, JsonArray(l1Groups))
                 })
 
@@ -812,6 +821,49 @@ class SheetModule(
         }
 
         return@withContext null // No match found
+    }
+
+    /**
+     * Appends a new nested item to the sheet.
+     * This method constructs a full row with appropriate empty cells and appends it to the end of the sheet.
+     * @param sheetName The name of the sheet (tab).
+     * @param identifiers A map of key-value pairs (from query params) defining the parent context.
+     * @param newItemData The JSON object representing the new item to add.
+     * @return The Sheets API response.
+     */
+    suspend fun appendNestedItem(sheetName: String, identifiers: Map<String, String>, newItemData: JsonObject): AppendValuesResponse? = withContext(Dispatchers.IO) {
+        // 1. Get header to determine column order
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull()?.map { it.toString() }
+            ?: return@withContext null
+
+        // 2. Construct the new row
+        val newRow = MutableList<Any>(headerRow.size) { "" }
+
+        // First, populate the row with parent identifiers from query params
+        identifiers.forEach { (key, value) ->
+            val index = headerRow.indexOf(key)
+            if (index != -1) {
+                newRow[index] = value
+            }
+        }
+
+        // Then, populate/overwrite with the new item data from the body
+        newItemData.forEach { (key, value) ->
+            val index = headerRow.indexOf(key)
+            if (index != -1) {
+                newRow[index] = value.jsonPrimitive.content
+            }
+        }
+
+        // 3. Prepare and execute the append operation
+        val body = ValueRange().setValues(listOf(newRow))
+        sheets.spreadsheets().values()
+            .append(spreadsheetId, "$sheetName!A:Z", body)
+            .setValueInputOption("RAW")
+            .execute()
     }
 
     /**

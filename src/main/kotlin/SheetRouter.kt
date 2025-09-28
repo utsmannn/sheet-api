@@ -62,38 +62,36 @@ fun Route.sheetRouting(sheets: Sheets) {
             throw BadRequestException("sheetId required in path or SHEET_ID env var")
         }
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
-        val body = call.receiveText()
         val sheetModule = SheetModule(sheetId, sheets)
 
-        val lenientJson = Json { isLenient = true; ignoreUnknownKeys = true }
-
         try {
-            val jsonObject = lenientJson.parseToJsonElement(body).jsonObject
-            // TODO: Implement validation for new schema structure
-            // val schema = sheetModule.getSheetSchema(sheetName)
-            // val validationErrors = sheetModule.validateJsonSchema(jsonObject, schema)
+            val body = call.receiveText()
+            val jsonObject = Json.parseToJsonElement(body).jsonObject
+            val queryParameters = call.request.queryParameters
 
-            // For now, skip validation until we implement new schema validation
-            val validationErrors = emptyList<String>()
-
-            if (validationErrors.isNotEmpty()) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    mapOf(
-                        "error" to "Validation failed",
-                        "details" to validationErrors
-                    )
-                )
-                return@post
+            val result = if (queryParameters.isEmpty()) {
+                // Handle appending a root entity (old behavior)
+                sheetModule.appendRowFromJson(sheetName, body)
+            } else {
+                // Handle appending a nested item
+                val identifiers = queryParameters.toMap().mapValues { it.value.first() }
+                sheetModule.appendNestedItem(sheetName, identifiers, jsonObject)
             }
 
-            sheetModule.appendRowFromJson(sheetName, body)
-            call.respond(mapOf("ok" to true))
+            if (result != null) {
+                call.respond(buildJsonObject {
+                    put("ok", true)
+                    put("updatedRange", result.updates.updatedRange)
+                })
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Failed to append data."))
+            }
+
         } catch (e: Exception) {
             call.respond(
                 HttpStatusCode.BadRequest,
                 mapOf(
-                    "error" to "Invalid JSON format",
+                    "error" to "Invalid JSON format or request",
                     "details" to (e.message ?: "Unknown error")
                 )
             )
