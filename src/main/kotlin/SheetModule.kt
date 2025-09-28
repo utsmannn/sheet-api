@@ -396,35 +396,173 @@ class SheetModule(
     }
 
     /**
-     * Get schema from header row (A1-Z1) with auto-detected data types
+     * Get schema of the specified sheet
+     * Analyzes header row and sample data to detect field types
+     * Returns either grouped or flat schema based on data structure
      * @param sheetName sheet name (tab)
-     * @return Map<String, String> -> field name to detected type
+     * @return JsonObject schema structure
      */
-    suspend fun getSheetSchema(sheetName: String): Map<String, String> = withContext(Dispatchers.IO) {
+    suspend fun getSheetSchema(sheetName: String): JsonObject = withContext(Dispatchers.IO) {
         val headerRow = sheets.spreadsheets().values()
             .get(spreadsheetId, "$sheetName!1:1")
             .execute()
             .getValues()?.firstOrNull() ?: emptyList()
 
-        val sampleData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!2:6")
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
             .execute()
             .getValues().orEmpty()
 
-        headerRow.mapIndexed { index, col ->
-            val columnName = col.toString()
+        if (allData.size <= 1) {
+            return@withContext buildJsonObject {
+                put("type", "object")
+                put("properties", buildJsonObject {})
+            }
+        }
 
-            val sampleValues = sampleData.mapNotNull { row ->
-                row.getOrNull(index)?.toString()?.takeIf { it.isNotBlank() }
+        val dataRows = allData.drop(1) // Skip header
+
+        // Check if data has grouping pattern
+        val hasGrouping = hasGroupingPattern(sheetName)
+
+        if (hasGrouping) {
+            generateGroupedSchema(headerRow, dataRows)
+        } else {
+            generateFlatSchema(headerRow, dataRows)
+        }
+    }
+
+    /**
+     * Generate schema for flat (non-grouped) data
+     */
+    private fun generateFlatSchema(headerRow: List<Any>, dataRows: List<List<Any>>): JsonObject {
+        val properties = buildJsonObject {
+            headerRow.forEachIndexed { index, col ->
+                val columnName = col.toString()
+                val sampleValues = dataRows.mapNotNull { row ->
+                    row.getOrNull(index)?.toString()?.takeIf { it.isNotBlank() }
+                }.take(5)
+
+                val typeVotes = sampleValues.map { detectDataType(it) }
+                val detectedType = typeVotes.groupingBy { it }
+                    .eachCount()
+                    .maxByOrNull { it.value }?.key ?: "string"
+
+                put(columnName, buildJsonObject {
+                    put("type", detectedType)
+                    put("required", true)
+                })
+            }
+        }
+
+        return buildJsonObject {
+            put("type", "array")
+            put("items", buildJsonObject {
+                put("type", "object")
+                put("properties", properties)
+            })
+        }
+    }
+
+    /**
+     * Generate schema for grouped/hierarchical data
+     */
+    private fun generateGroupedSchema(headerRow: List<Any>, dataRows: List<List<Any>>): JsonObject {
+        // Detect column types
+        val groupingColumns = mutableSetOf<Int>()
+        val rootColumns = mutableSetOf<Int>()
+        val contentColumns = mutableSetOf<Int>()
+
+        headerRow.forEachIndexed { colIndex, _ ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+            val totalRows = dataRows.size
+
+            when {
+                firstRowValue.isNotBlank() && nonEmptyCount == 1 -> {
+                    rootColumns.add(colIndex)
+                }
+                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows -> {
+                    groupingColumns.add(colIndex)
+                }
+                else -> {
+                    contentColumns.add(colIndex)
+                }
+            }
+        }
+
+        val properties = buildJsonObject {
+            // Add root level properties
+            rootColumns.forEach { colIndex ->
+                val fieldName = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                if (fieldName.isNotBlank()) {
+                    val sampleValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+                    val detectedType = if (sampleValue.isNotBlank()) detectDataType(sampleValue) else "string"
+
+                    put(fieldName, buildJsonObject {
+                        put("type", detectedType)
+                        put("required", true)
+                    })
+                }
             }
 
-            val typeVotes = sampleValues.map { detectDataType(it) }
-            val detectedType = typeVotes.groupingBy { it }
-                .eachCount()
-                .maxByOrNull { it.value }?.key ?: "string"
+            // Add grouped data schema
+            if (groupingColumns.isNotEmpty()) {
+                val groupColIndex = groupingColumns.first()
+                val groupFieldName = headerRow.getOrNull(groupColIndex)?.toString() ?: ""
+                val pluralFieldName = "${groupFieldName}s"
 
-            columnName to detectedType
-        }.toMap()
+                // Schema for content columns within groups
+                val itemProperties = buildJsonObject {
+                    contentColumns.forEach { colIndex ->
+                        val fieldName = headerRow.getOrNull(colIndex)?.toString() ?: ""
+                        if (fieldName.isNotBlank()) {
+                            val sampleValues = dataRows.mapNotNull { row ->
+                                row.getOrNull(colIndex)?.toString()?.takeIf { it.isNotBlank() }
+                            }.take(5)
+
+                            val typeVotes = sampleValues.map { detectDataType(it) }
+                            val detectedType = typeVotes.groupingBy { it }
+                                .eachCount()
+                                .maxByOrNull { it.value }?.key ?: "string"
+
+                            put(fieldName, buildJsonObject {
+                                put("type", detectedType)
+                                put("required", false)
+                            })
+                        }
+                    }
+                }
+
+                put(pluralFieldName, buildJsonObject {
+                    put("type", "array")
+                    put("items", buildJsonObject {
+                        put("type", "object")
+                        put("properties", buildJsonObject {
+                            put("name", buildJsonObject {
+                                put("type", "string")
+                                put("required", true)
+                            })
+                            put("data", buildJsonObject {
+                                put("type", "array")
+                                put("items", buildJsonObject {
+                                    put("type", "object")
+                                    put("properties", itemProperties)
+                                })
+                            })
+                        })
+                    })
+                })
+            }
+        }
+
+        return buildJsonObject {
+            put("type", "object")
+            put("properties", properties)
+        }
     }
 
     /**
