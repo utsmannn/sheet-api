@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import JsonViewer from './JsonViewer'
 
 interface ApiResponse {
   status: number
@@ -216,24 +217,43 @@ export default function ApiDemo() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Response
                 </label>
-                <div className="bg-gray-900 text-green-400 p-4 rounded-lg h-[600px] overflow-auto font-mono text-sm">
+                <div className="h-[600px] border border-gray-300 rounded-lg overflow-hidden">
                   {response ? (
-                    <div>
-                      <div className={`mb-2 flex items-center gap-2 ${response.status >= 200 && response.status < 300 ? 'text-green-400' : 'text-red-400'}`}>
-                        Status: {response.status}
-                        {response.status >= 200 && response.status < 300 && (
-                          <span className="text-xs bg-gray-600 text-white px-2 py-1 rounded">Success</span>
-                        )}
+                    <div className="h-full flex flex-col">
+                      {/* Status Bar */}
+                      <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+                        <div className={`flex items-center gap-2 ${response.status >= 200 && response.status < 300 ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className={`w-2 h-2 rounded-full ${response.status >= 200 && response.status < 300 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <span className="text-sm font-medium">Status: {response.status}</span>
+                          {response.status >= 200 && response.status < 300 && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Success</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {Array.isArray(response.data) ? `${response.data.length} items` : typeof response.data === 'object' ? 'Object' : 'Value'}
+                        </div>
                       </div>
-                      <pre className="whitespace-pre-wrap text-gray-300">
-                        {JSON.stringify(response.data, null, 2)}
-                      </pre>
+
+                      {/* JSON Viewer */}
+                      <div className="flex-1 overflow-hidden">
+                        <JsonViewer data={response.data} />
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-gray-500 text-center pt-8">
-                      Click "Test Endpoint" to see the live API response here.
-                      <br /><br />
-                      Watch how the API automatically detects if your data has hierarchical structure.
+                    <div className="h-full bg-gray-50 flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        </div>
+                        <p className="font-medium mb-2">Ready to test</p>
+                        <p className="text-sm">
+                          Click "Test Endpoint" to see the live API response here.
+                          <br />
+                          Watch how the API automatically detects if your data has hierarchical structure.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
