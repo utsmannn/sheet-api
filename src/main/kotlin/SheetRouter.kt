@@ -7,6 +7,7 @@ import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.util.toMap
 import kotlinx.serialization.json.*
 
 fun Route.sheetRouting(sheets: Sheets) {
@@ -100,7 +101,7 @@ fun Route.sheetRouting(sheets: Sheets) {
     }
 
     patch("/{sheetName}") {
-        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHE-ET_ID").ifEmpty {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
             throw BadRequestException("sheetId required in path or SHEET_ID env var")
         }
         val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
@@ -116,7 +117,15 @@ fun Route.sheetRouting(sheets: Sheets) {
                 return@patch
             }
 
-            val result = sheetModule.updateRootEntityField(sheetName, body)
+            val queryParameters = call.request.queryParameters
+            val result = if (queryParameters.isEmpty()) {
+                // Handle root entity update
+                sheetModule.updateRootEntityField(sheetName, body)
+            } else {
+                // Handle nested entity update
+                val identifiers = queryParameters.toMap().mapValues { it.value.first() }
+                sheetModule.updateNestedField(sheetName, identifiers, body)
+            }
 
             if (result != null) {
                 call.respond(buildJsonObject {
@@ -126,7 +135,7 @@ fun Route.sheetRouting(sheets: Sheets) {
             } else {
                 call.respond(
                     HttpStatusCode.NotFound,
-                    mapOf("error" to "Field not found in sheet header or no data available.")
+                    mapOf("error" to "Field or target row not found.")
                 )
             }
 
@@ -134,7 +143,7 @@ fun Route.sheetRouting(sheets: Sheets) {
             call.respond(
                 HttpStatusCode.BadRequest,
                 mapOf(
-                    "error" to "Invalid JSON format",
+                    "error" to "Invalid JSON format or request",
                     "details" to (e.message ?: "Unknown error")
                 )
             )

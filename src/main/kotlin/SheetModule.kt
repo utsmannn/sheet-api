@@ -744,6 +744,77 @@ class SheetModule(
     }
 
     /**
+     * Updates a single field in a nested structure, found by a set of identifiers.
+     * @param sheetName The name of the sheet (tab).
+     * @param identifiers A map of key-value pairs (from query params) to locate the row.
+     * @param updateData The JSON object with the single field to update.
+     * @return The Sheets API response, or null if no matching row is found.
+     */
+    suspend fun updateNestedField(sheetName: String, identifiers: Map<String, String>, updateData: JsonObject): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
+        if (updateData.keys.size != 1) {
+            throw IllegalArgumentException("Update data must contain exactly one key-value pair.")
+        }
+
+        val fieldToUpdate = updateData.keys.first()
+        val newValue = updateData[fieldToUpdate]?.jsonPrimitive?.content ?: ""
+
+        // 1. Get header and all data
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull()?.map { it.toString() }
+            ?: return@withContext null
+
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
+            .execute()
+            .getValues()?.drop(1) // Drop header
+            ?: return@withContext null
+
+        val headerMap = headerRow.withIndex().associate { (i, name) -> name to i }
+        val columnToUpdateIndex = headerMap[fieldToUpdate] ?: return@withContext null
+
+        // 2. Iterate through rows to find the match
+        val context = mutableMapOf<String, String>()
+        var targetRowIndex: Int? = null
+
+        allData.forEachIndexed { rowIndex, row ->
+            // Update context with values from potential grouping columns
+            headerMap.forEach { (name, index) ->
+                val cellValue = row.getOrNull(index)?.toString()?.takeIf { it.isNotBlank() }
+                if (cellValue != null) {
+                    context[name] = cellValue
+                }
+            }
+
+            // Check if the current row + context matches all identifiers
+            val isMatch = identifiers.all { (key, value) ->
+                context[key] == value
+            }
+
+            if (isMatch) {
+                targetRowIndex = rowIndex
+                return@forEachIndexed // Exit loop once match is found
+            }
+        }
+
+        if (targetRowIndex != null) {
+            // 3. Calculate range and execute update
+            val sheetRow = targetRowIndex!! + 2 // +1 for 1-based, +1 for header
+            val sheetColumn = toColumnLetter(columnToUpdateIndex)
+            val range = "$sheetName!$sheetColumn$sheetRow"
+
+            val body = ValueRange().setValues(listOf(listOf(newValue)))
+            return@withContext sheets.spreadsheets().values()
+                .update(spreadsheetId, range, body)
+                .setValueInputOption("RAW")
+                .execute()
+        }
+
+        return@withContext null // No match found
+    }
+
+    /**
      * Converts a zero-based column index to its A1 notation letter.
      * 0 -> A, 1 -> B, 25 -> Z, 26 -> AA, etc.
      */
