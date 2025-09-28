@@ -232,6 +232,7 @@ class SheetModule(
         sheetName: String,
         perPage: Int = 10,
         offset: Int = 1,
+        withNested: Boolean = true,
         spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
     ): JsonElement = withContext(Dispatchers.IO) {
 
@@ -252,25 +253,36 @@ class SheetModule(
 
         val dataRows = allData.drop(1)
 
-        // Check for grouping pattern inline
-        val hasGrouping = headerRow.indices.any { colIndex ->
-            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
-            val nonEmptyCount = dataRows.count { row ->
-                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
-                cellValue.isNotBlank()
+        if (withNested) {
+            // Check for grouping pattern inline
+            val hasGrouping = headerRow.indices.any { colIndex ->
+                val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+                val nonEmptyCount = dataRows.count { row ->
+                    val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                    cellValue.isNotBlank()
+                }
+                val totalRows = dataRows.size
+
+                // Grouping pattern: has value in first row AND has multiple but not all occurrences
+                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
             }
-            val totalRows = dataRows.size
 
-            // Grouping pattern: has value in first row AND has multiple but not all occurrences
-            firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
-        }
-
-        if (hasGrouping) {
-            // Build grouped format using already fetched data
-            buildGroupedJsonFromData(headerRow, dataRows)
+            if (hasGrouping) {
+                // Build grouped format using already fetched data
+                buildGroupedJsonFromData(headerRow, dataRows)
+            } else {
+                // Build flat format with pagination (either no grouping or withNested=false)
+                buildFlatJsonFromData(headerRow, dataRows, perPage, offset)
+            }
         } else {
-            // Build flat format with pagination
-            buildFlatJsonFromData(headerRow, dataRows, perPage, offset)
+            buildJsonArray {
+                buildFlatJsonFromData(headerRow, dataRows, perPage, offset, true)
+                    .filter {
+                        it.jsonObject.values.firstOrNull()?.toString() != "\"\""
+                    }.forEach {
+                        add(it)
+                    }
+            }.filterNotNull().firstOrNull() ?: buildJsonObject {  }
         }
     }
 
@@ -392,22 +404,40 @@ class SheetModule(
 
         return if (results.size == 1) results.first() else JsonArray(results)
     }
+
     /**
      * Build flat JSON array from already fetched data with pagination
      */
-    private fun buildFlatJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>, perPage: Int, offset: Int): JsonArray {
-        val startIndex = offset - 1
-        val endIndex = minOf(startIndex + perPage, dataRows.size)
-        val paginatedRows = if (startIndex < dataRows.size) dataRows.subList(startIndex, endIndex) else emptyList()
-
+    private fun buildFlatJsonFromData(
+        headerRow: List<Any>,
+        dataRows: List<List<Any>>,
+        perPage: Int,
+        offset: Int,
+        firstOnly: Boolean = false
+    ): JsonArray {
         return buildJsonArray {
-            paginatedRows.forEach { row ->
-                add(buildJsonObject {
-                    headerRow.forEachIndexed { i, col ->
-                        val cellValue = row.getOrNull(i)?.toString() ?: ""
-                        put(col.toString(), cellValue)
-                    }
-                })
+            if (firstOnly) {
+                dataRows.firstOrNull()?.let { row ->
+                    add(buildJsonObject {
+                        headerRow.forEachIndexed { i, col ->
+                            val cellValue = row.getOrNull(i)?.toString() ?: ""
+                            put(col.toString(), cellValue)
+                        }
+                    })
+                }
+            } else {
+                val startIndex = offset - 1
+                val endIndex = minOf(startIndex + perPage, dataRows.size)
+                val paginatedRows = if (startIndex < dataRows.size) dataRows.subList(startIndex, endIndex) else emptyList()
+
+                paginatedRows.forEach { row ->
+                    add(buildJsonObject {
+                        headerRow.forEachIndexed { i, col ->
+                            val cellValue = row.getOrNull(i)?.toString() ?: ""
+                            put(col.toString(), cellValue)
+                        }
+                    })
+                }
             }
         }
     }
@@ -520,9 +550,11 @@ class SheetModule(
                 firstRowValue.isNotBlank() && nonEmptyCount == 1 -> {
                     rootColumns.add(colIndex)
                 }
+
                 firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows -> {
                     groupingColumns.add(colIndex)
                 }
+
                 else -> {
                     contentColumns.add(colIndex)
                 }
@@ -732,6 +764,7 @@ class SheetModule(
                 sheetName = sheetName,
                 perPage = perPage,
                 offset = offset,
+                withNested = false, // Skip nested data for performance in overview
                 spreadSheetValues = spreadSheetValues
             )
         }
@@ -750,7 +783,10 @@ class SheetModule(
      * @param updateData A JsonObject containing the single key-value pair to update.
      * @return The response from the Sheets API, or null if the field is not found or no data exists.
      */
-    suspend fun updateRootEntityField(sheetName: String, updateData: JsonObject): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
+    suspend fun updateRootEntityField(
+        sheetName: String,
+        updateData: JsonObject
+    ): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
         if (updateData.keys.size != 1) {
             throw IllegalArgumentException("Update data must contain exactly one key-value pair.")
         }
@@ -803,7 +839,11 @@ class SheetModule(
      * @param updateData The JSON object with the single field to update.
      * @return The Sheets API response, or null if no matching row is found.
      */
-    suspend fun updateNestedField(sheetName: String, identifiers: Map<String, String>, updateData: JsonObject): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
+    suspend fun updateNestedField(
+        sheetName: String,
+        identifiers: Map<String, String>,
+        updateData: JsonObject
+    ): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
         if (updateData.keys.size != 1) {
             throw IllegalArgumentException("Update data must contain exactly one key-value pair.")
         }
@@ -875,7 +915,11 @@ class SheetModule(
      * @param newItemData The JSON object representing the new item to add.
      * @return The Sheets API response.
      */
-    suspend fun appendNestedItem(sheetName: String, identifiers: Map<String, String>, newItemData: JsonObject): AppendValuesResponse? = withContext(Dispatchers.IO) {
+    suspend fun appendNestedItem(
+        sheetName: String,
+        identifiers: Map<String, String>,
+        newItemData: JsonObject
+    ): AppendValuesResponse? = withContext(Dispatchers.IO) {
         // 1. Get header to determine column order
         val headerRow = sheets.spreadsheets().values()
             .get(spreadsheetId, "$sheetName!1:1")
