@@ -232,7 +232,6 @@ class SheetModule(
         sheetName: String,
         perPage: Int = 10,
         offset: Int = 1,
-        withNested: Boolean = true,
         spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
     ): JsonElement = withContext(Dispatchers.IO) {
 
@@ -253,37 +252,26 @@ class SheetModule(
 
         val dataRows = allData.drop(1)
 
-        if (withNested) {
-            // Check for grouping pattern inline
-            val hasGrouping = headerRow.indices.any { colIndex ->
-                val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
-                val nonEmptyCount = dataRows.count { row ->
-                    val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
-                    cellValue.isNotBlank()
-                }
-                val totalRows = dataRows.size
-
-                // Grouping pattern: has value in first row AND has multiple but not all occurrences
-                firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
+        val hasGrouping = headerRow.indices.any { colIndex ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
             }
+            val totalRows = dataRows.size
 
-            if (hasGrouping) {
-                // Build grouped format using already fetched data
-                buildGroupedJsonFromData(headerRow, dataRows)
-            } else {
-                // Build flat format with pagination (either no grouping or withNested=false)
-                buildFlatJsonFromData(headerRow, dataRows, perPage, offset)
-            }
-        } else {
-            buildJsonArray {
-                buildFlatJsonFromData(headerRow, dataRows, perPage, offset, true)
-                    .filter {
-                        it.jsonObject.values.firstOrNull()?.toString() != "\"\""
-                    }.forEach {
-                        add(it)
-                    }
-            }.filterNotNull().firstOrNull() ?: buildJsonObject {  }
+            // Grouping pattern: has value in first row AND has multiple but not all occurrences
+            firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
         }
+
+        val data = if (hasGrouping) {
+            // Build grouped format using already fetched data
+            buildGroupedJsonFromData(headerRow, dataRows)
+        } else {
+            // Build flat format with pagination (either no grouping or withNested=false)
+            buildFlatJsonFromData(headerRow, dataRows, perPage, offset)
+        }
+        data
     }
 
     private fun buildGroupedJsonFromData(headerRow: List<Any>, dataRows: List<List<Any>>): JsonElement {
@@ -764,7 +752,6 @@ class SheetModule(
                 sheetName = sheetName,
                 perPage = perPage,
                 offset = offset,
-                withNested = false, // Skip nested data for performance in overview
                 spreadSheetValues = spreadSheetValues
             )
         }
