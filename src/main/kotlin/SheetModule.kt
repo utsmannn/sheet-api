@@ -231,16 +231,17 @@ class SheetModule(
     suspend fun getAutoFormattedData(
         sheetName: String,
         perPage: Int = 10,
-        offset: Int = 1
+        offset: Int = 1,
+        spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
     ): JsonElement = withContext(Dispatchers.IO) {
 
         // Single API call to get all data - then decide format
-        val headerRow = sheets.spreadsheets().values()
+        val headerRow = spreadSheetValues
             .get(spreadsheetId, "$sheetName!1:1")
             .execute()
             .getValues()?.firstOrNull() ?: emptyList()
 
-        val allData = sheets.spreadsheets().values()
+        val allData = spreadSheetValues
             .get(spreadsheetId, "$sheetName!A:Z")
             .execute()
             .getValues().orEmpty()
@@ -697,6 +698,49 @@ class SheetModule(
     suspend fun getSheetNames(): List<String> = withContext(Dispatchers.IO) {
         val spreadsheet = sheets.spreadsheets().get(spreadsheetId).execute()
         spreadsheet.sheets.mapNotNull { it.properties?.title }
+    }
+
+    /**
+     * Get all sheets data efficiently without looping getAutoFormattedData
+     * @param perPage number of sheets to return
+     * @param offset sheet index starting from 1
+     * @return Pair<JsonArray, Int> -> all sheets data & total sheets count
+     */
+    suspend fun getAllSheetsData(
+        perPage: Int = 10,
+        offset: Int = 1
+    ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
+
+        // Get all sheet names in single call
+        val sheetNames = getSheetNames()
+        val totalSheets = sheetNames.size
+
+        // Apply pagination to sheet names
+        val startIndex = (offset - 1).coerceAtLeast(0)
+        val endIndex = (startIndex + perPage).coerceAtMost(totalSheets)
+        val paginatedSheetNames = if (startIndex < totalSheets) {
+            sheetNames.subList(startIndex, endIndex)
+        } else {
+            emptyList()
+        }
+
+        val spreadSheetValues = sheets.spreadsheets().values()
+
+        // Batch fetch all data for paginated sheets
+        val sheetsData = paginatedSheetNames.map { sheetName ->
+            getAutoFormattedData(
+                sheetName = sheetName,
+                perPage = perPage,
+                offset = offset,
+                spreadSheetValues = spreadSheetValues
+            )
+        }
+
+        val resultArray = buildJsonArray {
+            sheetsData.forEach { add(it) }
+        }
+
+        Pair(resultArray, totalSheets)
     }
 
     /**

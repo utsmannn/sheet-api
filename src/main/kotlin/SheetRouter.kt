@@ -16,9 +16,14 @@ fun Route.sheetRouting(sheets: Sheets) {
         val sheetId = call.parameters["sheetId"] ?: System.getenv("SHEET_ID").ifEmpty {
             throw BadRequestException("sheetId required in path or SHEET_ID env var")
         }
+        val perPage = call.request.queryParameters["per_page"]?.toIntOrNull() ?: 10
+        val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 1
+
         val sheetModule = SheetModule(sheetId, sheets)
-        val sheetNames = sheetModule.getSheetNames()
-        call.respond(sheetNames)
+        val (sheetsData, totalSheets) = sheetModule.getAllSheetsData(perPage, offset)
+
+        call.response.header("X-Total-Count", totalSheets.toString())
+        call.respond(sheetsData)
     }
 
     get("/{sheetName}") {
