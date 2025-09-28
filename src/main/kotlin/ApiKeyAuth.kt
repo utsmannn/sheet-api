@@ -35,29 +35,49 @@ object ApiKeyAuth {
      * @return true if valid, false otherwise
      */
     fun isValidApiKey(apiKey: String): Boolean {
-        return try {
+        try {
             val decoded = String(Base64.getDecoder().decode(apiKey))
             val parts = decoded.split(":")
 
-            if (parts.size != 2) return false
+            if (parts.size != 2) {
+                println("API Key Validation Error: Invalid format - expected 2 parts, got ${parts.size}")
+                return false
+            }
 
             val keySecret = parts[0]
             val timestampStr = parts[1]
-            val timestamp = timestampStr.toLongOrNull() ?: return false
+            val timestamp = timestampStr.toLongOrNull()
+
+            if (timestamp == null) {
+                println("API Key Validation Error: Timestamp is not a valid number.")
+                return false
+            }
 
             // Validate secret key
-            if (keySecret != secretKey) return false
+            if (keySecret != secretKey) {
+                println("API Key Validation Error: Invalid secret key. Provided: '$keySecret', Expected: '$secretKey'")
+                return false
+            }
 
             // Validate timestamp format (must be exactly 13 digits)
-            if (timestampStr.length != 13) return false
+            if (timestampStr.length != 13) {
+                println("API Key Validation Error: Timestamp format invalid. Expected 13 digits, got ${timestampStr.length}")
+                return false
+            }
 
             // Validate timestamp range (within 1 year)
             val currentTime = System.currentTimeMillis()
-            val maxAge = 365L * 24 * 60 * 60 * 1000
+            val maxAge = 365L * 24 * 60 * 60 * 1000 // 1 year in milliseconds
 
-            timestamp in (currentTime - maxAge)..(currentTime + maxAge)
+            val isValid = timestamp in (currentTime - maxAge)..(currentTime + maxAge)
+            if (!isValid) {
+                println("API Key Validation Error: Timestamp out of range. Current: $currentTime, Provided: $timestamp")
+            }
+            return isValid
         } catch (e: Exception) {
-            false
+            println("API Key Validation Exception: ${e.message}")
+            e.printStackTrace()
+            return false
         }
     }
 

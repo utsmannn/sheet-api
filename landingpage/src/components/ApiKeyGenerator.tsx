@@ -15,7 +15,27 @@ export default function ApiKeyGenerator() {
   }
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(err => {
+        console.error('Failed to copy with navigator: ', err)
+      })
+    } else {
+      // Fallback for non-secure contexts
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed' // Prevent scrolling to bottom of page in MS Edge.
+      textArea.style.top = '0'
+      textArea.style.left = '0'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      try {
+        document.execCommand('copy')
+      } catch (err) {
+        console.error('Fallback: Oops, unable to copy', err)
+      }
+      document.body.removeChild(textArea)
+    }
   }
 
   return (

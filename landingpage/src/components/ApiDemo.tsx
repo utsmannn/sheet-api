@@ -38,9 +38,10 @@ export default function ApiDemo() {
         })
         const data = await res.json()
         if (Array.isArray(data)) {
-          setSheetNames(data)
-          if (data.length > 0) {
-            setSheetName(data[0])
+          const names = data.map((item: any) => item.sheet)
+          setSheetNames(names)
+          if (names.length > 0) {
+            setSheetName(names[0])
           }
         }
       } catch (error) {
