@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.google.api.client)
     implementation(libs.google.auth.library.oauth2.http)
     implementation(libs.google.api.services.sheets)
+    implementation(libs.redis.clients.jedis)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 }

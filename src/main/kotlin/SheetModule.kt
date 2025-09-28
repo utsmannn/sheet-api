@@ -732,61 +732,61 @@ class SheetModule(
         fields: List<String>
     ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
 
-        // Get all sheet names in single call
-        val sheetNames = getSheetNames()
+        val spreadsheet = sheets.spreadsheets()
+            .get(spreadsheetId)
+            .setFields("sheets.properties.title")
+            .execute()
+
+        val sheetNames = spreadsheet.sheets.mapNotNull { it.properties?.title }
         val totalSheets = sheetNames.size
 
-        // Apply pagination to sheet names
-        val startIndex = (offset - 1).coerceAtLeast(0)
-        val endIndex = (startIndex + perPage).coerceAtMost(totalSheets)
-        val paginatedSheetNames = if (startIndex < totalSheets) {
-            sheetNames.subList(startIndex, endIndex)
-        } else {
-            emptyList()
+        val start = (offset - 1).coerceAtLeast(0)
+        val end   = (start + perPage).coerceAtMost(totalSheets)
+        val pageNames = sheetNames.subList(start, end)
+        if (pageNames.isEmpty()) return@withContext JsonArray(emptyList()) to 0
+
+        val ranges = pageNames.flatMap { name ->
+            listOf("$name!1:1", "$name!2:2")
         }
 
-        val spreadSheetValues = sheets.spreadsheets().values()
+        val batch = sheets.spreadsheets().values()
+            .batchGet(spreadsheetId)
+            .setRanges(ranges)
+            .setMajorDimension("ROWS")
+            .execute()
 
+        val valueRanges = batch.valueRanges ?: return@withContext JsonArray(emptyList()) to totalSheets
 
-        val sheetsData = paginatedSheetNames.map { sheetName ->
-            val allHeaders = getHeader(sheetName, spreadSheetValues)
-                .filter { fields.contains(it.key) }
+        val result = buildJsonArray {
+            pageNames.forEachIndexed { idx, sheetName ->
+                val headerRow = valueRanges.getOrNull(idx * 2)?.getValues()?.firstOrNull().orEmpty()
+                val firstRow  = valueRanges.getOrNull(idx * 2 + 1)?.getValues()?.firstOrNull().orEmpty()
 
-            val filteredHeader = if (fields.isNotEmpty()) {
-                allHeaders
-                    .filter { fields.contains(it.key) }
-            } else {
-                val defaultCoordinate = "A"
-                val defaultValue = getValueByCoordinate(sheetName, "A1", spreadSheetValues)
-                mapOf(
-                    defaultValue to defaultCoordinate
-                )
-            }
+                val obj = buildJsonObject {
+                    put("sheet", sheetName)
+                    put("data", buildJsonObject {
+                        if (fields.isEmpty()) {
+                            val header = headerRow.firstOrNull()
+                            val first = firstRow.firstOrNull()
 
-            val data = filteredHeader.map { (field, letterCoordinate) ->
-                val coordinate = letterCoordinate + "2"
-                val value = getValueByCoordinate(sheetName, coordinate, spreadSheetValues)
-                Pair(field, value)
-            }.filter { it.first != null }
-
-            buildJsonObject {
-                put("sheet", sheetName)
-                put("data", buildJsonObject {
-                    data.forEach { (field, value) ->
-                        if (field != null) {
-                            put(field, value)
+                            if (header != null && first != null) {
+                                put(header.toString(), first.toString())
+                            }
+                        } else {
+                            headerRow.forEachIndexed { i, col ->
+                                val field = col.toString()
+                                if (fields.isEmpty() || fields.contains(field)) {
+                                    put(field, firstRow.getOrNull(i)?.toString() ?: "")
+                                }
+                            }
                         }
-                    }
-                })
 
+                    })
+                }
+                add(obj)
             }
         }
-
-        val resultArray = buildJsonArray {
-            sheetsData.forEach { add(it) }
-        }
-
-        Pair(resultArray, totalSheets)
+        result to totalSheets
     }
 
     /**

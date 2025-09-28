@@ -2,9 +2,10 @@
 kotlin = "2.2.20"
 ktor = "3.3.0"
 logback = "1.5.13"
-googleApiClient="2.6.0"
-googleOAuth2Library="1.39.1"
+googleApiClient = "2.6.0"
+googleOAuth2Library = "1.39.1"
 googleApiSheetService = "v4-rev20220927-2.0.0"
+redis = "6.1.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
@@ -20,9 +21,10 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient"}
+google-api-client = { module = "com.google.api-client:google-api-client", version.ref = "googleApiClient" }
 google-api-services-sheets = { module = "com.google.apis:google-api-services-sheets", version.ref = "googleApiSheetService" }
-google-auth-library-oauth2-http = {module = "com.google.auth:google-auth-library-oauth2-http", version.ref="googleOAuth2Library"}
+google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleOAuth2Library" }
+redis-clients-jedis = { module = "redis.clients:jedis", version.ref = "redis" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
