@@ -6,6 +6,10 @@ echo "🚀 Building React frontend..."
 # Navigate to landingpage directory
 cd landingpage || { echo "❌ landingpage directory not found"; exit 1; }
 
+# Create .env file for Vite from environment variables
+echo "✨ Creating .env file for Vite..."
+printenv | grep -E "^(API_SECRET_KEY)" | sed -e 's/^/VITE_/' > .env
+
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing dependencies..."
