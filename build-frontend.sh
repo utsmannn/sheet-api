@@ -8,7 +8,8 @@ cd landingpage || { echo "❌ landingpage directory not found"; exit 1; }
 
 # Create .env file for Vite from environment variables
 echo "✨ Creating .env file for Vite..."
-printenv | grep -E "^(API_SECRET_KEY)" | sed -e 's/^/VITE_/' > .env
+echo ${API_SECRET_KEY}
+echo "VITE_API_SECRET_KEY=${API_SECRET_KEY:-default-secret-key}" > .env
 
 # Install dependencies if node_modules doesn't exist
 if [ ! -d "node_modules" ]; then
