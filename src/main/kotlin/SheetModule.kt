@@ -25,30 +25,32 @@ class SheetModule(
         offset: Int = 1
     ): Pair<JsonArray, Int> = withContext(Dispatchers.IO) {
 
-        val totalRows = executeWithErrorHandling {
+        val totalRowsRange = "$sheetName!A:A"
+        val headerRange = "$sheetName!1:1"
+
+        val totalRowsTemp = executeWithErrorHandling {
             sheets.spreadsheets().values()
-                .get(spreadsheetId, "$sheetName!A:A")
+                .get(spreadsheetId, totalRowsRange)
                 .execute()
                 .getValues()?.size ?: 0
         }
 
         val startRow = offset + 1
-        val endRow = minOf(startRow + perPage - 1, totalRows.coerceAtLeast(1))
+        val endRow = minOf(startRow + perPage - 1, totalRowsTemp.coerceAtLeast(1))
         val dataRange = "$sheetName!A$startRow:Z$endRow"
 
-        val headerRow = executeWithErrorHandling {
+        val batchGetResponse = executeWithErrorHandling {
             sheets.spreadsheets().values()
-                .get(spreadsheetId, "$sheetName!1:1")
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange, totalRowsRange))
                 .execute()
-                .getValues()?.firstOrNull() ?: emptyList()
         }
 
-        val data = executeWithErrorHandling {
-            sheets.spreadsheets().values()
-                .get(spreadsheetId, dataRange)
-                .execute()
-                .getValues().orEmpty()
-        }
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: emptyList()
+        val data = valueRanges?.get(1)?.getValues().orEmpty()
+        val totalRows = valueRanges?.get(2)?.getValues()?.size ?: 0
+
 
         val arr = buildJsonArray {
             data.forEach { row ->
@@ -72,16 +74,19 @@ class SheetModule(
      */
     suspend fun getGroupedJson(sheetName: String): JsonObject = withContext(Dispatchers.IO) {
 
-        // Get all data from sheet
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull() ?: emptyList()
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
 
-        val allData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues().orEmpty()
+        val batchGetResponse = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: emptyList()
+        val allData = valueRanges?.get(1)?.getValues().orEmpty()
 
         if (allData.size <= 1) {
             return@withContext buildJsonObject {}
@@ -193,15 +198,19 @@ class SheetModule(
      * @return Boolean true if has grouping pattern
      */
     private suspend fun hasGroupingPattern(sheetName: String): Boolean = withContext(Dispatchers.IO) {
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull() ?: emptyList()
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
 
-        val allData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues().orEmpty()
+        val batchGetResponse = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: emptyList()
+        val allData = valueRanges?.get(1)?.getValues().orEmpty()
 
         if (allData.size <= 1) return@withContext false
 
@@ -235,16 +244,19 @@ class SheetModule(
         spreadSheetValues: Sheets.Spreadsheets.Values = sheets.spreadsheets().values()
     ): JsonElement = withContext(Dispatchers.IO) {
 
-        // Single API call to get all data - then decide format
-        val headerRow = spreadSheetValues
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull() ?: emptyList()
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
 
-        val allData = spreadSheetValues
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues().orEmpty()
+        val batchGetResponse = executeWithErrorHandling {
+            spreadSheetValues
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: emptyList()
+        val allData = valueRanges?.get(1)?.getValues().orEmpty()
 
         if (allData.size <= 1) {
             return@withContext buildJsonArray {}
@@ -456,15 +468,19 @@ class SheetModule(
      * @return JsonObject schema structure
      */
     suspend fun getSheetSchema(sheetName: String): JsonObject = withContext(Dispatchers.IO) {
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull() ?: emptyList()
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
 
-        val allData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues().orEmpty()
+        val batchGetResponse = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: emptyList()
+        val allData = valueRanges?.get(1)?.getValues().orEmpty()
 
         if (allData.size <= 1) {
             return@withContext buildJsonObject {
@@ -475,8 +491,18 @@ class SheetModule(
 
         val dataRows = allData.drop(1) // Skip header
 
-        // Check if data has grouping pattern
-        val hasGrouping = hasGroupingPattern(sheetName)
+        // Check if data has grouping pattern (logic from hasGroupingPattern)
+        val hasGrouping = headerRow.indices.any { colIndex ->
+            val firstRowValue = dataRows.firstOrNull()?.getOrNull(colIndex)?.toString() ?: ""
+            val nonEmptyCount = dataRows.count { row ->
+                val cellValue = row.getOrNull(colIndex)?.toString() ?: ""
+                cellValue.isNotBlank()
+            }
+            val totalRows = dataRows.size
+
+            // Grouping pattern: has value in first row AND has multiple but not all occurrences
+            firstRowValue.isNotBlank() && nonEmptyCount > 1 && nonEmptyCount < totalRows
+        }
 
         if (hasGrouping) {
             generateGroupedSchema(headerRow, dataRows)
@@ -807,24 +833,25 @@ class SheetModule(
         val fieldToUpdate = updateData.keys.first()
         val newValue = updateData[fieldToUpdate]?.jsonPrimitive?.content ?: ""
 
-        // 1. Get header to find the column index
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull()
-            ?: return@withContext null
+        // 1. Get header and all data to find the column index and row
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
+
+        val batchGetResponse = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull() ?: return@withContext null
+        val allData = valueRanges?.get(1)?.getValues()?.drop(1) ?: return@withContext null
 
         val columnIndex = headerRow.indexOf(fieldToUpdate)
         if (columnIndex == -1) {
             return@withContext null // Field not found in header
         }
-
-        // 2. Get all data to find the first root entity row
-        val allData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues()?.drop(1) // Drop header
-            ?: return@withContext null
 
         // A root entity is the first row with a value in the first column
         val rowIndex = allData.indexOfFirst { it.getOrNull(0)?.toString()?.isNotBlank() == true }
@@ -865,17 +892,19 @@ class SheetModule(
         val newValue = updateData[fieldToUpdate]?.jsonPrimitive?.content ?: ""
 
         // 1. Get header and all data
-        val headerRow = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!1:1")
-            .execute()
-            .getValues()?.firstOrNull()?.map { it.toString() }
-            ?: return@withContext null
+        val headerRange = "$sheetName!1:1"
+        val dataRange = "$sheetName!A:Z"
 
-        val allData = sheets.spreadsheets().values()
-            .get(spreadsheetId, "$sheetName!A:Z")
-            .execute()
-            .getValues()?.drop(1) // Drop header
-            ?: return@withContext null
+        val batchGetResponse = executeWithErrorHandling {
+            sheets.spreadsheets().values()
+                .batchGet(spreadsheetId)
+                .setRanges(listOf(headerRange, dataRange))
+                .execute()
+        }
+
+        val valueRanges = batchGetResponse.valueRanges
+        val headerRow = valueRanges?.get(0)?.getValues()?.firstOrNull()?.map { it.toString() } ?: return@withContext null
+        val allData = valueRanges?.get(1)?.getValues()?.drop(1) ?: return@withContext null
 
         val headerMap = headerRow.withIndex().associate { (i, name) -> name to i }
         val columnToUpdateIndex = headerMap[fieldToUpdate] ?: return@withContext null
