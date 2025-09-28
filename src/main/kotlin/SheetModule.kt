@@ -689,4 +689,72 @@ class SheetModule(
         val spreadsheet = sheets.spreadsheets().get(spreadsheetId).execute()
         spreadsheet.sheets.mapNotNull { it.properties?.title }
     }
+
+    /**
+     * Updates a single field for the first root entity found in the sheet.
+     * A root entity is identified as the first row with a non-empty value in the first column.
+     * @param sheetName The name of the sheet (tab) to update.
+     * @param updateData A JsonObject containing the single key-value pair to update.
+     * @return The response from the Sheets API, or null if the field is not found or no data exists.
+     */
+    suspend fun updateRootEntityField(sheetName: String, updateData: JsonObject): com.google.api.services.sheets.v4.model.UpdateValuesResponse? = withContext(Dispatchers.IO) {
+        if (updateData.keys.size != 1) {
+            throw IllegalArgumentException("Update data must contain exactly one key-value pair.")
+        }
+
+        val fieldToUpdate = updateData.keys.first()
+        val newValue = updateData[fieldToUpdate]?.jsonPrimitive?.content ?: ""
+
+        // 1. Get header to find the column index
+        val headerRow = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!1:1")
+            .execute()
+            .getValues()?.firstOrNull()
+            ?: return@withContext null
+
+        val columnIndex = headerRow.indexOf(fieldToUpdate)
+        if (columnIndex == -1) {
+            return@withContext null // Field not found in header
+        }
+
+        // 2. Get all data to find the first root entity row
+        val allData = sheets.spreadsheets().values()
+            .get(spreadsheetId, "$sheetName!A:Z")
+            .execute()
+            .getValues()?.drop(1) // Drop header
+            ?: return@withContext null
+
+        // A root entity is the first row with a value in the first column
+        val rowIndex = allData.indexOfFirst { it.getOrNull(0)?.toString()?.isNotBlank() == true }
+        if (rowIndex == -1) {
+            return@withContext null // No root entity found
+        }
+
+        // 3. Calculate the cell's A1 notation
+        val sheetRow = rowIndex + 2 // +1 for 1-based index, +1 for header row
+        val sheetColumn = toColumnLetter(columnIndex)
+        val range = "$sheetName!$sheetColumn$sheetRow"
+
+        // 4. Prepare and execute the update
+        val body = ValueRange().setValues(listOf(listOf(newValue)))
+        sheets.spreadsheets().values()
+            .update(spreadsheetId, range, body)
+            .setValueInputOption("RAW")
+            .execute()
+    }
+
+    /**
+     * Converts a zero-based column index to its A1 notation letter.
+     * 0 -> A, 1 -> B, 25 -> Z, 26 -> AA, etc.
+     */
+    private fun toColumnLetter(colIndex: Int): String {
+        var num = colIndex
+        val sb = StringBuilder()
+        while (num >= 0) {
+            val remainder = num % 26
+            sb.append((remainder + 'A'.code).toChar())
+            num = num / 26 - 1
+        }
+        return sb.reverse().toString()
+    }
 }

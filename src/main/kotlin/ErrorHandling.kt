@@ -69,6 +69,7 @@ fun Application.configureErrorHandling() {
         }
 
         exception<GoogleJsonResponseException> { call, cause ->
+            cause.printStackTrace()
             call.respond(
                 HttpStatusCode.BadRequest,
                 buildJsonObject {

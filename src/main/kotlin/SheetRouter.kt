@@ -98,4 +98,46 @@ fun Route.sheetRouting(sheets: Sheets) {
             )
         }
     }
+
+    patch("/{sheetName}") {
+        val sheetId = call.parameters["sheetId"] ?: System.getenv("SHE-ET_ID").ifEmpty {
+            throw BadRequestException("sheetId required in path or SHEET_ID env var")
+        }
+        val sheetName = call.parameters["sheetName"] ?: throw BadRequestException("sheetName required")
+        val sheetModule = SheetModule(sheetId, sheets)
+
+        try {
+            val body = call.receive<JsonObject>()
+            if (body.keys.size != 1) {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("error" to "Request body must contain exactly one field to update.")
+                )
+                return@patch
+            }
+
+            val result = sheetModule.updateRootEntityField(sheetName, body)
+
+            if (result != null) {
+                call.respond(buildJsonObject {
+                    put("ok", true)
+                    put("updatedRange", Json.encodeToJsonElement(result.updatedRange))
+                })
+            } else {
+                call.respond(
+                    HttpStatusCode.NotFound,
+                    mapOf("error" to "Field not found in sheet header or no data available.")
+                )
+            }
+
+        } catch (e: Exception) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                mapOf(
+                    "error" to "Invalid JSON format",
+                    "details" to (e.message ?: "Unknown error")
+                )
+            )
+        }
+    }
 }
